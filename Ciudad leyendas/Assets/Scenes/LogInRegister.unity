@@ -1077,6 +1077,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2802afe5c65f88a4aa521bbff1d4ebbc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  logInForm: {fileID: 677823023}
+  emailInput: {fileID: 817822571}
+  passwordInput: {fileID: 1506314877}
+  logInButton: {fileID: 1358740812}
 --- !u!4 &1089409293
 Transform:
   m_ObjectHideFlags: 0
