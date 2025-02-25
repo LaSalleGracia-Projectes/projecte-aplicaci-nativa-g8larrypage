@@ -1219,6 +1219,8 @@ MonoBehaviour:
   passwordInput: {fileID: 1506314877}
   logInButton: {fileID: 1358740812}
   infoText: {fileID: 278927396}
+  logInGoogleButton: {fileID: 1776069597}
+  googleSignInManager: {fileID: 1270411023}
 --- !u!4 &1089409293
 Transform:
   m_ObjectHideFlags: 0
@@ -1391,6 +1393,51 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1182505438}
   m_CullTransparentMesh: 1
+--- !u!1 &1270411022
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1270411024}
+  - component: {fileID: 1270411023}
+  m_Layer: 0
+  m_Name: GoogleSignInManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1270411023
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1270411022}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 791e3ee6859d4d5e98370e9dfef5ba52, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  infoText: {fileID: 278927396}
+--- !u!4 &1270411024
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1270411022}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 540, y: 960.1, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1330771888
 GameObject:
   m_ObjectHideFlags: 0
@@ -3132,3 +3179,4 @@ SceneRoots:
   - {fileID: 1089409293}
   - {fileID: 2118301254}
   - {fileID: 1717614993}
+  - {fileID: 1270411024}
