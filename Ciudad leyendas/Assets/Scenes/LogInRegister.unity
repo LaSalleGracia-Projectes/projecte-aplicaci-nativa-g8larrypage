@@ -2377,7 +2377,7 @@ MonoBehaviour:
   signUpPasswordInput: {fileID: 1683800993}
   signUpPasswordConfirmInput: {fileID: 1806708386}
   infoTextSignUp: {fileID: 161980806}
-  signUpButton: {fileID: 1391048835}
+  signUpButton: {fileID: 1100089900}
   goToLogInForm: {fileID: 1391048835}
 --- !u!4 &1089409293
 Transform:

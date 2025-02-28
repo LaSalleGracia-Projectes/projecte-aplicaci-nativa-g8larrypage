@@ -1,15 +1,17 @@
 using System;
 using System.Threading.Tasks;
+using Models;
 using Supabase;
+using Supabase.Postgrest;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 using Client = Supabase.Client;
 
 public class FormManager : MonoBehaviour
 {
-    [Header("LogIn Form")]
-    public GameObject logInForm;
+    [Header("LogIn Form")] public GameObject logInForm;
     public TMP_InputField emailInput;
     public TMP_InputField passwordInput;
     public Button logInButton;
@@ -17,8 +19,7 @@ public class FormManager : MonoBehaviour
     public Button logInGoogleButton;
     public GoogleSignInManager googleSignInManager;
     public Button goToSignUpForm;
-    [Header("SignUp Form")]
-    public GameObject signUpForm;
+    [Header("SignUp Form")] public GameObject signUpForm;
     public TMP_InputField usernameInput;
     public TMP_InputField signUpEmailInput;
     public TMP_InputField signUpEmailConfirmInput;
@@ -40,11 +41,12 @@ public class FormManager : MonoBehaviour
             logInForm.SetActive(false);
             signUpForm.SetActive(true);
         });
-        signUpButton.onClick.AddListener(() =>
+        goToLogInForm.onClick.AddListener(() =>
         {
             logInForm.SetActive(true);
             signUpForm.SetActive(false);
         });
+        signUpButton.onClick.AddListener(SignUp);
     }
 
     private async void SignUp()
@@ -54,7 +56,14 @@ public class FormManager : MonoBehaviour
         String signUpEmailConfirm = signUpEmailConfirmInput.text;
         String signUpPassword = signUpPasswordConfirmInput.text;
         String signUpPasswordConfirm = signUpPasswordConfirmInput.text;
-        
+
+        await VerifyInputFields(signUpEmail, signUpEmailConfirm, signUpPassword, signUpPasswordConfirm, username);
+    }
+
+    private async Task VerifyInputFields(string signUpEmail, string signUpEmailConfirm, string signUpPassword,
+        string signUpPasswordConfirm, string username)
+    {
+        Debug.Log("SignUp Email: " + signUpEmail);
         // Check if email and password are the same
         if (signUpEmail != signUpEmailConfirm)
         {
@@ -62,40 +71,101 @@ public class FormManager : MonoBehaviour
             infoTextSignUp.color = Color.red;
             return;
         }
-
+        
+        // Check if password and password confirm are the same
+        Debug.Log("SignUp Password: " + signUpPassword);
         if (signUpPassword != signUpPasswordConfirm)
         {
             infoTextSignUp.text = "Passwords do not match!";
             infoTextSignUp.color = Color.red;
             return;
         }
-        
+
         // Check if email is valid
+        Debug.Log("SignUp Password: " + signUpPassword);
         if (!signUpEmail.Contains("@"))
         {
             infoTextSignUp.text = "Invalid email!";
             infoTextSignUp.color = Color.red;
             return;
         }
-        
+
         // Check if password is strong enough
-        if (signUpPassword.Length < 8)
+        Debug.Log("SignUp Password: " + signUpPassword);
+        if (signUpPassword.Length < 10)
         {
-            infoTextSignUp.text = "Password must be at least 8 characters long!";
+            infoTextSignUp.text = "Password must be at least 10 characters long!";
             infoTextSignUp.color = Color.red;
             return;
         }
-        
+
         // Check if username is valid
+        Debug.Log("SignUp Username: " + username);
         if (username.Length < 3)
         {
             infoTextSignUp.text = "Username must be at least 3 characters long!";
             infoTextSignUp.color = Color.red;
             return;
         }
-        
+
         // Check if username is unique
+        Debug.Log("SignUp Password: " + signUpPassword);
+        try
+        {
+            Debug.Log("Checking if username is unique...");
+            var supabase = await ConnectSupabase();
+            var response = await supabase.From<Jugador>().Select("nombre")
+                .Filter("nombre", Constants.Operator.Equals, username).Get();
+            // if (response.Model != null) Debug.Log(response.Model.Nombre);
+            if (response.Model != null)
+            {
+                infoTextSignUp.text = "Username already exists!";
+                infoTextSignUp.color = Color.red;
+                return;
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("SignUp failed: " + e.Message);
+            infoTextSignUp.text = "SignUp failed!";
+            infoTextSignUp.color = Color.red;
+        }
         
+        // If all checks pass, sign up
+        Debug.Log("All checks passed!");
+        try
+        {
+            var supabase = await ConnectSupabase();
+            var session = await supabase.Auth.SignUp(signUpEmail, signUpPassword);
+            if (session is { User: not null })
+            {
+                Debug.Log("SignUp successful!");
+                infoTextSignUp.text = "SignUp successful!";
+                infoTextSignUp.color = Color.green;
+            }
+            
+            // Add user to Jugador table
+            if (session != null && session.User != null && session.User.Id != null)
+            {
+                var jugador = new Jugador
+                {
+                    Nombre = username,
+                    PasosTotales = 0,
+                    IdUsuario = Guid.Parse(session.User.Id),
+                    
+                };
+                
+                await supabase.From<Jugador>().Insert(jugador);
+            }
+
+            
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("SignUp failed: " + e.Message);
+            infoTextSignUp.text = "SignUp failed!";
+            infoTextSignUp.color = Color.red;
+        }
     }
 
     private async void LogIn()
