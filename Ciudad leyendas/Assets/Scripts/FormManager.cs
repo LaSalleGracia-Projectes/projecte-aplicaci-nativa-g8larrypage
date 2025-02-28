@@ -19,11 +19,14 @@ public class FormManager : MonoBehaviour
     public Button goToSignUpForm;
     [Header("SignUp Form")]
     public GameObject signUpForm;
+    public TMP_InputField usernameInput;
     public TMP_InputField signUpEmailInput;
     public TMP_InputField signUpEmailConfirmInput;
     public TMP_InputField signUpPasswordInput;
     public TMP_InputField signUpPasswordConfirmInput;
+    public TMP_Text infoTextSignUp;
     public Button signUpButton;
+    public Button goToLogInForm;
 
     void Start()
     {
