@@ -40,6 +40,11 @@ public class FormManager : MonoBehaviour
             logInForm.SetActive(false);
             signUpForm.SetActive(true);
         });
+        signUpButton.onClick.AddListener(() =>
+        {
+            logInForm.SetActive(true);
+            signUpForm.SetActive(false);
+        });
     }
 
     private async void LogIn()
