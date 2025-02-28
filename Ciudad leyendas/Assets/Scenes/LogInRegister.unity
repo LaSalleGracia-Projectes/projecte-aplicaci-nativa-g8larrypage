@@ -2371,14 +2371,14 @@ MonoBehaviour:
   googleSignInManager: {fileID: 1270411023}
   goToSignUpForm: {fileID: 1565329971}
   signUpForm: {fileID: 277985882}
-  usernameInput: {fileID: 0}
+  usernameInput: {fileID: 139331136}
   signUpEmailInput: {fileID: 1872368246}
   signUpEmailConfirmInput: {fileID: 1320489271}
   signUpPasswordInput: {fileID: 1683800993}
   signUpPasswordConfirmInput: {fileID: 1806708386}
-  infoTextSignUp: {fileID: 0}
+  infoTextSignUp: {fileID: 161980806}
   signUpButton: {fileID: 1391048835}
-  goToLogInForm: {fileID: 0}
+  goToLogInForm: {fileID: 1391048835}
 --- !u!4 &1089409293
 Transform:
   m_ObjectHideFlags: 0

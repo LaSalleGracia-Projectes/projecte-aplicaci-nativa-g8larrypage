@@ -47,6 +47,57 @@ public class FormManager : MonoBehaviour
         });
     }
 
+    private async void SignUp()
+    {
+        String username = usernameInput.text;
+        String signUpEmail = signUpEmailConfirmInput.text;
+        String signUpEmailConfirm = signUpEmailConfirmInput.text;
+        String signUpPassword = signUpPasswordConfirmInput.text;
+        String signUpPasswordConfirm = signUpPasswordConfirmInput.text;
+        
+        // Check if email and password are the same
+        if (signUpEmail != signUpEmailConfirm)
+        {
+            infoTextSignUp.text = "Emails do not match!";
+            infoTextSignUp.color = Color.red;
+            return;
+        }
+
+        if (signUpPassword != signUpPasswordConfirm)
+        {
+            infoTextSignUp.text = "Passwords do not match!";
+            infoTextSignUp.color = Color.red;
+            return;
+        }
+        
+        // Check if email is valid
+        if (!signUpEmail.Contains("@"))
+        {
+            infoTextSignUp.text = "Invalid email!";
+            infoTextSignUp.color = Color.red;
+            return;
+        }
+        
+        // Check if password is strong enough
+        if (signUpPassword.Length < 8)
+        {
+            infoTextSignUp.text = "Password must be at least 8 characters long!";
+            infoTextSignUp.color = Color.red;
+            return;
+        }
+        
+        // Check if username is valid
+        if (username.Length < 3)
+        {
+            infoTextSignUp.text = "Username must be at least 3 characters long!";
+            infoTextSignUp.color = Color.red;
+            return;
+        }
+        
+        // Check if username is unique
+        
+    }
+
     private async void LogIn()
     {
         try
