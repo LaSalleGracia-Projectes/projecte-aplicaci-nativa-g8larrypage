@@ -72,7 +72,7 @@ public class FormManager : MonoBehaviour
             infoTextSignUp.color = Color.red;
             return;
         }
-        
+
         // Check if password and password confirm are the same
         Debug.Log("SignUp Password: " + signUpPassword);
         if (signUpPassword != signUpPasswordConfirm)
@@ -93,9 +93,11 @@ public class FormManager : MonoBehaviour
 
         // Check if password is strong enough
         Debug.Log("SignUp Password: " + signUpPassword);
-        if (signUpPassword.Length < 10)
+        if (signUpPassword.Length < 10 || !HasUpperCase(signUpPassword) || !HasLowerCase(signUpPassword) ||
+            !HasSymbol(signUpPassword))
         {
-            infoTextSignUp.text = "Password must be at least 10 characters long!";
+            infoTextSignUp.text =
+                "Password must be at least 10 characters long, contain an uppercase letter, a lowercase letter, and a symbol!";
             infoTextSignUp.color = Color.red;
             return;
         }
@@ -117,7 +119,6 @@ public class FormManager : MonoBehaviour
             var supabase = await ConnectSupabase();
             var response = await supabase.From<Jugador>().Select("nombre")
                 .Filter("nombre", Constants.Operator.Equals, username).Get();
-            // if (response.Model != null) Debug.Log(response.Model.Nombre);
             if (response.Model != null)
             {
                 infoTextSignUp.text = "Username already exists!";
@@ -131,7 +132,7 @@ public class FormManager : MonoBehaviour
             infoTextSignUp.text = "SignUp failed!";
             infoTextSignUp.color = Color.red;
         }
-        
+
         // If all checks pass, sign up
         Debug.Log("All checks passed!");
         try
@@ -151,6 +152,45 @@ public class FormManager : MonoBehaviour
             infoTextSignUp.text = "SignUp failed!";
             infoTextSignUp.color = Color.red;
         }
+    }
+
+    private bool HasUpperCase(string input)
+    {
+        foreach (char c in input)
+        {
+            if (char.IsUpper(c))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool HasLowerCase(string input)
+    {
+        foreach (char c in input)
+        {
+            if (char.IsLower(c))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool HasSymbol(string input)
+    {
+        foreach (char c in input)
+        {
+            if (!char.IsLetterOrDigit(c))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private async void LogIn()
