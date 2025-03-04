@@ -143,22 +143,6 @@ public class FormManager : MonoBehaviour
                 infoTextSignUp.text = "SignUp successful!";
                 infoTextSignUp.color = Color.green;
             }
-            
-            // Add user to Jugador table
-            if (session != null && session.User != null && session.User.Id != null)
-            {
-                var jugador = new Jugador
-                {
-                    Nombre = username,
-                    PasosTotales = 0,
-                    IdUsuario = Guid.Parse(session.User.Id),
-                    
-                };
-                
-                await supabase.From<Jugador>().Insert(jugador);
-            }
-
-            
         }
         catch (Exception e)
         {
