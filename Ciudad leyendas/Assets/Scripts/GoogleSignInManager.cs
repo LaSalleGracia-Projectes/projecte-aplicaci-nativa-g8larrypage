@@ -105,7 +105,7 @@ public class GoogleSignInManager : MonoBehaviour
             Session session = (await supabase.Auth.ExchangeCodeForSession(_pkce, _token)!);
             infoText.text = $"Success! Signed Up as {session.User?.Email}";
             infoText.color = Color.green;
-            SceneManager.LoadScene(sceneBuildIndex: 2);
+            FormManager.GoToGame();
         }
         catch (GotrueException goTrueException)
         {

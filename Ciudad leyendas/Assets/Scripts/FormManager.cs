@@ -6,6 +6,7 @@ using Supabase.Postgrest;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using Client = Supabase.Client;
 
@@ -168,6 +169,7 @@ public class FormManager : MonoBehaviour
                 Debug.Log("LogIn successful!");
                 infoText.text = "LogIn successful!";
                 infoText.color = Color.green;
+                GoToGame();
             }
         }
         catch (Exception e)
@@ -176,6 +178,11 @@ public class FormManager : MonoBehaviour
             infoText.text = "LogIn failed!";
             infoText.color = Color.red;
         }
+    }
+
+    public static void GoToGame()
+    {
+        SceneManager.LoadScene(sceneBuildIndex: 2);
     }
 
     private static async Task<Client> ConnectSupabase()
