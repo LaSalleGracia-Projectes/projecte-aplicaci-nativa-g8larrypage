@@ -48,8 +48,83 @@ public class FormManager : MonoBehaviour
             signUpForm.SetActive(false);
         });
         signUpButton.onClick.AddListener(SignUp);
+        
+        CheckForSession();
     }
 
+    /// <summary>
+    /// Checks if there is a session already open when the game starts
+    /// </summary>
+    private async void CheckForSession()
+    {
+        try
+        {
+            var supabase = await ConnectSupabase();
+            var session = await supabase.Auth.RetrieveSessionAsync();
+        
+            if (session != null && session.User != null)
+            {
+                Debug.Log("Session found. User already logged in: " + session.User.Email);
+                
+                await CheckPlayerExists(session.User.Id);
+                
+                GoToGame();
+            }
+            else
+            {
+                Debug.Log("No active session found");
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("Error checking session: " + e.Message);
+        }
+    }
+
+    /// <summary>
+    /// Method to check if the player exists in the database
+    /// </summary>
+    /// <param name="userId">Id from the user session</param>
+    private static async Task CheckPlayerExists(string userId)
+    {
+        var supabase = await ConnectSupabase();
+
+        try
+        {
+            var response = await supabase.From<Jugador>().Select("nombre")
+                .Filter("id_usuario", Constants.Operator.Equals, userId).Get();
+
+            if (response.Models.Count == 0)
+            {
+                Debug.Log("Player does not exist, creating player...");
+                
+                string defaultName = "Player" + DateTime.Now.Ticks % 10000;
+            
+                var model = new Jugador
+                {
+                    Nombre = defaultName,
+                    PasosTotales = 0,
+                    IdUsuario = Guid.Parse(userId),
+                    IdClan = 0
+                };
+
+                var response2 = await supabase.From<Jugador>().Insert(model);
+                Debug.Log("Player created: " + response2.Models[0].Nombre);
+            }
+            else
+            {
+                Debug.Log("Player exists: " + response.Models[0].Nombre);
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("Error checking player: " + e.Message);
+        }
+    }
+
+    /// <summary>
+    /// Method to sign up a new user
+    /// </summary>
     private async void SignUp()
     {
         String username = usernameInput.text;
@@ -61,6 +136,14 @@ public class FormManager : MonoBehaviour
         await VerifyInputFields(signUpEmail, signUpEmailConfirm, signUpPassword, signUpPasswordConfirm, username);
     }
 
+    /// <summary>
+    /// Method to verify the input fields of the sign-up form
+    /// </summary>
+    /// <param name="signUpEmail">Email from user</param>
+    /// <param name="signUpEmailConfirm">Confirmation for user email</param>
+    /// <param name="signUpPassword">User password</param>
+    /// <param name="signUpPasswordConfirm">Confirmation for user password</param>
+    /// <param name="username">Username set by user</param>
     private async Task VerifyInputFields(string signUpEmail, string signUpEmailConfirm, string signUpPassword,
         string signUpPasswordConfirm, string username)
     {
@@ -154,6 +237,11 @@ public class FormManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Checks if input string has at least one uppercase letter
+    /// </summary>
+    /// <param name="input">User password</param>
+    /// <returns></returns>
     private bool HasUpperCase(string input)
     {
         foreach (char c in input)
@@ -167,6 +255,11 @@ public class FormManager : MonoBehaviour
         return false;
     }
 
+    /// <summary>
+    /// Checks if input string has at least one lowercase letter
+    /// </summary>
+    /// <param name="input">User password</param>
+    /// <returns></returns>
     private bool HasLowerCase(string input)
     {
         foreach (char c in input)
@@ -180,6 +273,11 @@ public class FormManager : MonoBehaviour
         return false;
     }
 
+    /// <summary>
+    /// Checks if input string has at least one symbol
+    /// </summary>
+    /// <param name="input">User password</param>
+    /// <returns></returns>
     private bool HasSymbol(string input)
     {
         foreach (char c in input)
@@ -193,6 +291,9 @@ public class FormManager : MonoBehaviour
         return false;
     }
 
+    /// <summary>
+    /// Method to log in a user
+    /// </summary>
     private async void LogIn()
     {
         try
@@ -220,11 +321,18 @@ public class FormManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// After user logs, go to the game scene
+    /// </summary>
     public static void GoToGame()
     {
         SceneManager.LoadScene(sceneBuildIndex: 2);
     }
 
+    /// <summary>
+    /// Allows to connect to Supabase
+    /// </summary>
+    /// <returns></returns>
     private static async Task<Client> ConnectSupabase()
     {
         var url = SupabaseKeys.supabaseURL;
