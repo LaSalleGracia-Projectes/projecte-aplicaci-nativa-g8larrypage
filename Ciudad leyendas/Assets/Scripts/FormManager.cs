@@ -326,7 +326,7 @@ public class FormManager : MonoBehaviour
     /// </summary>
     public static void GoToGame()
     {
-        SceneManager.LoadScene(sceneBuildIndex: 2);
+        SceneManager.LoadScene("GridTest");
     }
 
     /// <summary>
