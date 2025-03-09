@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Threading.Tasks;
+using Services;
 using Supabase;
 using Supabase.Gotrue;
 using Supabase.Gotrue.Exceptions;
@@ -17,6 +18,7 @@ public class GoogleSignInManager : MonoBehaviour
     private HttpListener httpListener;
     private string _pkce;
     private string _token;
+    private LoginManager _loginManager;
 
     public void SignInWithGoogle()
     {
@@ -105,7 +107,8 @@ public class GoogleSignInManager : MonoBehaviour
             Session session = (await supabase.Auth.ExchangeCodeForSession(_pkce, _token)!);
             infoText.text = $"Success! Signed Up as {session.User?.Email}";
             infoText.color = Color.green;
-            FormManager.GoToGame();
+            _loginManager.GoToGame();
+            _loginManager.SaveSession(session);
         }
         catch (GotrueException goTrueException)
         {
