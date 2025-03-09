@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Models;
 using Supabase.Gotrue;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Constants = Supabase.Postgrest.Constants;
@@ -165,7 +166,7 @@ namespace Services
                         Nombre = defaultName,
                         PasosTotales = 0,
                         IdUsuario = Guid.Parse(userId),
-                        IdClan = 0
+                        IdClan = null
                     };
 
                     var response2 = await supabase.From<Jugador>().Insert(model);

@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using Models;
 using System.Threading.Tasks;
+using Services;
 using Supabase;
 using Supabase.Postgrest;
 using TMPro;
@@ -10,16 +11,19 @@ using Client = Supabase.Client;
 
 public class StepManagerController : MonoBehaviour
 {
+    private Client _supabase;
+    private LoginManager _loginManager;
+    
     public TMP_Text totalStepsText;
     public TMP_Text recentStepsText;
 
     private int _totalSteps;
     private int _recentSteps;
     private string _userId;
+    private Jugador _jugador;
 
     void Start()
     {
-        // Get user ID from session
         CheckForSession();
         
         // Fetch initial step data
@@ -31,24 +35,21 @@ public class StepManagerController : MonoBehaviour
 
     private async void CheckForSession()
     {
-        try
+        _loginManager = new LoginManager();
+        bool hasSession = await _loginManager.CheckForSession();
+    
+        if (hasSession)
         {
-            var supabase = await ConnectSupabase();
-            var session = await supabase.Auth.RetrieveSessionAsync();
-
-            if (session != null && session.User != null)
-            {
-                _userId = session.User.Id;
-                Debug.Log("User ID retrieved: " + _userId);
-            }
-            else
-            {
-                Debug.LogError("No active session found");
-            }
+            _userId = _loginManager.GetCurrentUserId();
+            Debug.Log($"Retrieved user session for ID: {_userId}");
+        
+            // Initialize Supabase client for future API calls
+            var supabaseManager = SupabaseManager.Instance;
+            _supabase = await supabaseManager.GetClient();
         }
-        catch (Exception e)
+        else
         {
-            Debug.LogError("Error checking session: " + e.Message);
+            Debug.LogWarning("No active session found. Step syncing will be disabled.");
         }
     }
 
@@ -122,8 +123,7 @@ public class StepManagerController : MonoBehaviour
             
         try
         {
-            var supabase = await ConnectSupabase();
-            var response = await supabase.From<Jugador>()
+            var response = await _supabase.From<Jugador>()
                 .Filter("id_usuario", Constants.Operator.Equals, _userId)
                 .Get();
                 
@@ -132,7 +132,7 @@ public class StepManagerController : MonoBehaviour
                 var jugador = response.Models[0];
                 jugador.PasosTotales = _totalSteps;
                 
-                await supabase.From<Jugador>().Update(jugador);
+                await _supabase.From<Jugador>().Update(jugador);
                 Debug.Log("Steps data synced with backend");
             }
         }
@@ -140,20 +140,5 @@ public class StepManagerController : MonoBehaviour
         {
             Debug.LogError("Error syncing steps with backend: " + e.Message);
         }
-    }
-
-    private static async Task<Client> ConnectSupabase()
-    {
-        var url = SupabaseKeys.supabaseURL;
-        var key = SupabaseKeys.supabaseKey;
-
-        var options = new SupabaseOptions()
-        {
-            AutoConnectRealtime = true
-        };
-
-        var supabase = new Client(url, key, options);
-        await supabase.InitializeAsync();
-        return supabase;
     }
 }
