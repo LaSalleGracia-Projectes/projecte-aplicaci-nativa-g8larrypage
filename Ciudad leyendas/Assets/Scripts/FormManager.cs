@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Models;
+using Services;
 using Supabase;
 using Supabase.Postgrest;
 using TMPro;
@@ -8,10 +9,11 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using Client = Supabase.Client;
 
 public class FormManager : MonoBehaviour
 {
+    private static SupabaseManager _supabaseManager = SupabaseManager.Instance;
+
     [Header("LogIn Form")] public GameObject logInForm;
     public TMP_InputField emailInput;
     public TMP_InputField passwordInput;
@@ -48,7 +50,7 @@ public class FormManager : MonoBehaviour
             signUpForm.SetActive(false);
         });
         signUpButton.onClick.AddListener(SignUp);
-        
+
         CheckForSession();
     }
 
@@ -59,15 +61,15 @@ public class FormManager : MonoBehaviour
     {
         try
         {
-            var supabase = await ConnectSupabase();
+            var supabase = await _supabaseManager.GetClient();
             var session = await supabase.Auth.RetrieveSessionAsync();
-        
+
             if (session != null && session.User != null)
             {
                 Debug.Log("Session found. User already logged in: " + session.User.Email);
-                
+
                 await CheckPlayerExists(session.User.Id);
-                
+
                 GoToGame();
             }
             else
@@ -87,19 +89,18 @@ public class FormManager : MonoBehaviour
     /// <param name="userId">Id from the user session</param>
     private static async Task CheckPlayerExists(string userId)
     {
-        var supabase = await ConnectSupabase();
-
         try
         {
+            var supabase = await _supabaseManager.GetClient();
             var response = await supabase.From<Jugador>().Select("nombre")
                 .Filter("id_usuario", Constants.Operator.Equals, userId).Get();
 
             if (response.Models.Count == 0)
             {
                 Debug.Log("Player does not exist, creating player...");
-                
+
                 string defaultName = "Player" + DateTime.Now.Ticks % 10000;
-            
+
                 var model = new Jugador
                 {
                     Nombre = defaultName,
@@ -199,7 +200,7 @@ public class FormManager : MonoBehaviour
         try
         {
             Debug.Log("Checking if username is unique...");
-            var supabase = await ConnectSupabase();
+            var supabase = await _supabaseManager.GetClient();
             var response = await supabase.From<Jugador>().Select("nombre")
                 .Filter("nombre", Constants.Operator.Equals, username).Get();
             if (response.Model != null)
@@ -220,7 +221,7 @@ public class FormManager : MonoBehaviour
         Debug.Log("All checks passed!");
         try
         {
-            var supabase = await ConnectSupabase();
+            var supabase = await _supabaseManager.GetClient();
             var session = await supabase.Auth.SignUp(signUpEmail, signUpPassword);
             if (session is { User: not null })
             {
@@ -301,7 +302,7 @@ public class FormManager : MonoBehaviour
             var email = emailInput.text;
             var password = passwordInput.text;
 
-            var supabase = await ConnectSupabase();
+            var supabase = await _supabaseManager.GetClient();
 
             var response = await supabase.Auth.SignIn(email, password);
 
@@ -327,26 +328,5 @@ public class FormManager : MonoBehaviour
     public static void GoToGame()
     {
         SceneManager.LoadScene("GridTest");
-    }
-
-    /// <summary>
-    /// Allows to connect to Supabase
-    /// </summary>
-    /// <returns></returns>
-    private static async Task<Client> ConnectSupabase()
-    {
-        var url = SupabaseKeys.supabaseURL;
-        var key = SupabaseKeys.supabaseKey;
-
-        var options = new SupabaseOptions()
-        {
-            AutoConnectRealtime = true
-        };
-
-        var supabase = new Client(url, key, options);
-
-        await supabase.InitializeAsync();
-
-        return supabase;
     }
 }
