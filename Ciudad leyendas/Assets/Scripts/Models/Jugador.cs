@@ -20,6 +20,6 @@ namespace Models
         public Guid IdUsuario { get; set; }
         
         [Column("id_clan")]
-        public int IdClan { get; set; }
+        public int? IdClan { get; set; }
     }
 }
