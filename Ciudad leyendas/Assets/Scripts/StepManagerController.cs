@@ -34,25 +34,75 @@ public class StepManagerController : MonoBehaviour
 
     void Start()
     {
+        // Iniciar el proceso de verificación y solicitud de permisos
+        StartCoroutine(CheckAndRequestPermissions());
+    }
+
+    IEnumerator CheckAndRequestPermissions()
+    {
+        bool hasReadPermission = Permission.HasUserAuthorizedPermission(Permission.ExternalStorageRead);
+        bool hasWritePermission = Permission.HasUserAuthorizedPermission(Permission.ExternalStorageWrite);
+
+        // Si no tenemos los permisos, los solicitamos
+        if (!hasReadPermission)
+        {
+            Permission.RequestUserPermission(Permission.ExternalStorageRead);
+            // Esperar un poco para dar tiempo a que se muestre el diálogo
+            yield return new WaitForSeconds(0.5f);
+        }
+
+        if (!hasWritePermission)
+        {
+            Permission.RequestUserPermission(Permission.ExternalStorageWrite);
+            yield return new WaitForSeconds(0.5f);
+        }
+
+        // Dar tiempo al usuario para que responda a las solicitudes de permiso
+        yield return new WaitForSeconds(1.0f);
+
+        // Verificar si los permisos fueron concedidos
         if (Permission.HasUserAuthorizedPermission(Permission.ExternalStorageRead) &&
             Permission.HasUserAuthorizedPermission(Permission.ExternalStorageWrite))
         {
-            // Permisos concedidos, continuar con la lógica
+            Debug.Log("Permisos concedidos, inicializando...");
             Initialize();
         }
         else
         {
-            // Solicitar permisos
-            Permission.RequestUserPermission(Permission.ExternalStorageRead);
-            Permission.RequestUserPermission(Permission.ExternalStorageWrite);
+            Debug.LogWarning("Permisos no concedidos. La aplicación no funcionará correctamente.");
+            // Mostrar mensaje al usuario explicando que se necesitan los permisos
+            // Puedes añadir un UI para esto
+            
+            // Seguir intentando hasta conseguir los permisos
+            StartCoroutine(RetryPermissionCheck());
+        }
+    }
+
+    IEnumerator RetryPermissionCheck()
+    {
+        // Esperar un tiempo y volver a intentar
+        yield return new WaitForSeconds(3.0f);
+        
+        if (Permission.HasUserAuthorizedPermission(Permission.ExternalStorageRead) &&
+            Permission.HasUserAuthorizedPermission(Permission.ExternalStorageWrite))
+        {
+            Debug.Log("Permisos finalmente concedidos, inicializando...");
+            Initialize();
+        }
+        else
+        {
+            // Puedes mostrar un mensaje al usuario o solicitar permisos nuevamente
+            Debug.LogWarning("Permisos aún no concedidos. Intentando nuevamente...");
+            StartCoroutine(CheckAndRequestPermissions());
         }
     }
 
     void Initialize()
     {
         CheckForSession();
-
+        
         _jsonFilePath = "/storage/emulated/0/Android/data/com.ciudad.leyendas/files/steps_data.json";
+        
         Debug.Log($"Archivo JSON externo: {_jsonFilePath}");
         StartCoroutine(CheckAndLoadStepsData());
     }
@@ -63,19 +113,28 @@ public class StepManagerController : MonoBehaviour
         {
             if (Permission.HasUserAuthorizedPermission(Permission.ExternalStorageRead))
             {
-                if (File.Exists(_jsonFilePath))
+                try 
                 {
-                    Debug.Log($"Archivo JSON externo: EXISTE en {_jsonFilePath}");
-                    string jsonData = File.ReadAllText(_jsonFilePath);
-                    currentStepsData = JsonUtility.FromJson<StepsData>(jsonData);
-                    Debug.Log($"Pasos recientes: {currentStepsData.recentSteps}");
-                }
-                else
-                {
-                    Debug.LogWarning("Archivo de datos de pasos no encontrado");
-                }
+                    if (File.Exists(_jsonFilePath))
+                    {
+                        Debug.Log($"Archivo JSON externo: EXISTE en {_jsonFilePath}");
+                        string jsonData = File.ReadAllText(_jsonFilePath);
+                        currentStepsData = JsonUtility.FromJson<StepsData>(jsonData);
+                        Debug.Log($"Pasos recientes: {currentStepsData.recentSteps}");
+                    }
+                    else
+                    {
+                        Debug.LogWarning("Archivo de datos de pasos no encontrado");
+                        // Inicializar con datos vacíos para evitar errores
+                        currentStepsData = new StepsData();
+                    }
 
-                UpdateUI();
+                    UpdateUI();
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError($"Error al leer el archivo: {e.Message}");
+                }
             }
             else
             {
