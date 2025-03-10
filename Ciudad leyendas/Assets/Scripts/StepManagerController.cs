@@ -1,15 +1,12 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using Models;
-using System.Threading.Tasks;
 using Services;
-using Supabase;
 using Supabase.Postgrest;
 using TMPro;
-using UnityEngine.UI;
+using UnityEngine.Android;
 using Client = Supabase.Client;
 
 public class StepManagerController : MonoBehaviour
@@ -26,22 +23,37 @@ public class StepManagerController : MonoBehaviour
     [Serializable]
     public class StepsData
     {
-        public long total_steps;
-        public long recent_steps;
-        public long last_sync_time;
+        public long totalSteps;
+        public long recentSteps;
+        public long lastSyncTime;
         public long timestamp;
     }
 
     public StepsData currentStepsData;
-    private string jsonFilePath;
+    private string _jsonFilePath;
 
     void Start()
     {
+        if (Permission.HasUserAuthorizedPermission(Permission.ExternalStorageRead) &&
+            Permission.HasUserAuthorizedPermission(Permission.ExternalStorageWrite))
+        {
+            // Permisos concedidos, continuar con la lógica
+            Initialize();
+        }
+        else
+        {
+            // Solicitar permisos
+            Permission.RequestUserPermission(Permission.ExternalStorageRead);
+            Permission.RequestUserPermission(Permission.ExternalStorageWrite);
+        }
+    }
+
+    void Initialize()
+    {
         CheckForSession();
 
-        jsonFilePath = Path.Combine(Application.persistentDataPath,
-            "../Android/data/com.ciudad.leyendas/files/steps_data.json");
-        Debug.Log($"Archivo JSON externo: {jsonFilePath}");
+        _jsonFilePath = "/storage/emulated/0/Android/data/com.ciudad.leyendas/files/steps_data.json";
+        Debug.Log($"Archivo JSON externo: {_jsonFilePath}");
         StartCoroutine(CheckAndLoadStepsData());
     }
 
@@ -49,19 +61,27 @@ public class StepManagerController : MonoBehaviour
     {
         while (true)
         {
-            if (File.Exists(jsonFilePath))
+            if (Permission.HasUserAuthorizedPermission(Permission.ExternalStorageRead))
             {
-                Debug.Log($"Archivo JSON externo: EXISTE en {jsonFilePath}");
-                string jsonData = File.ReadAllText(jsonFilePath);
-                currentStepsData = JsonUtility.FromJson<StepsData>(jsonData);
-                Debug.Log($"Pasos recientes: {currentStepsData.recent_steps}");
+                if (File.Exists(_jsonFilePath))
+                {
+                    Debug.Log($"Archivo JSON externo: EXISTE en {_jsonFilePath}");
+                    string jsonData = File.ReadAllText(_jsonFilePath);
+                    currentStepsData = JsonUtility.FromJson<StepsData>(jsonData);
+                    Debug.Log($"Pasos recientes: {currentStepsData.recentSteps}");
+                }
+                else
+                {
+                    Debug.LogWarning("Archivo de datos de pasos no encontrado");
+                }
+
+                UpdateUI();
             }
             else
             {
-                Debug.LogWarning("Archivo de datos de pasos no encontrado");
+                Debug.LogWarning("Permiso de lectura de almacenamiento externo no concedido");
             }
 
-            UpdateUI();
             yield return new WaitForSeconds(5f); // Refrescar cada 5 segundos
         }
     }
@@ -89,10 +109,10 @@ public class StepManagerController : MonoBehaviour
     private void UpdateUI()
     {
         if (totalStepsText != null)
-            totalStepsText.text = $"Total Steps: {currentStepsData.total_steps}";
+            totalStepsText.text = $"Total Steps: {currentStepsData.totalSteps}";
 
         if (recentStepsText != null)
-            recentStepsText.text = $"Recent Steps: {currentStepsData.recent_steps}";
+            recentStepsText.text = $"Recent Steps: {currentStepsData.recentSteps}";
     }
 
     private async void SyncStepsWithBackend()
@@ -109,7 +129,7 @@ public class StepManagerController : MonoBehaviour
             if (response.Models.Count > 0)
             {
                 var jugador = response.Models[0];
-                jugador.PasosTotales = (int)currentStepsData.total_steps;
+                jugador.PasosTotales = (int)currentStepsData.totalSteps;
 
                 await _supabase.From<Jugador>().Update(jugador);
                 Debug.Log("Steps data synced with backend");
