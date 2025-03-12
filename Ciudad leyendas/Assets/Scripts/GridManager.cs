@@ -7,11 +7,12 @@ public class GridManager : MonoBehaviour
     public int cols = 10;
     public float cellSize = 1.0f;
     public GameObject cellPrefab;  // Prefab de la celda
-    public GameObject objectToPlace; // Objeto a colocar en las celdas
+    public Structure[] availableStructures;  // Esta propiedad debe ser pública o [SerializeField] para aparecer en el Inspector
+
 
     private Vector2 gridOrigin;
     private GameObject[,] gridArray; // Almacena las celdas creadas
-    private Dictionary<GameObject, GameObject> placedObjects = new Dictionary<GameObject, GameObject>(); // Relación Celda-Objeto
+    private Dictionary<GameObject, Structure> placedStructures = new Dictionary<GameObject, Structure>(); // Relación Celda-Estructura
 
     void Start()
     {
@@ -58,7 +59,7 @@ public class GridManager : MonoBehaviour
 
                 GameObject cell = CreateCell(cellPosition);
                 gridArray[row, col] = cell;
-                placedObjects[cell] = null; // Inicialmente, cada celda está vacía
+                placedStructures[cell] = null; // Inicialmente, cada celda está vacía
             }
         }
     }
@@ -94,17 +95,28 @@ public class GridManager : MonoBehaviour
         if (hit.collider != null)
         {
             GameObject clickedCell = hit.collider.gameObject;
-            PlaceObjectInCell(clickedCell);
+            PlaceStructureInCell(clickedCell);
         }
     }
 
-    void PlaceObjectInCell(GameObject cell)
+    void PlaceStructureInCell(GameObject cell)
     {
-        if (placedObjects.ContainsKey(cell) && placedObjects[cell] == null) // Verifica que la celda esté vacía
+        // Si la celda no tiene una estructura, colocar una nueva
+        if (placedStructures.ContainsKey(cell) && placedStructures[cell] == null)
         {
-            Vector3 objectPosition = cell.transform.position + new Vector3(0, 0, -1); // Mueve el objeto hacia adelante
-            GameObject newObj = Instantiate(objectToPlace, objectPosition, Quaternion.identity);
-            placedObjects[cell] = newObj; // Guarda el objeto en la celda
+            Structure structureToPlace = availableStructures[Random.Range(0, availableStructures.Length)]; // Elegir una estructura aleatoria
+
+            // Instanciar la estructura y colocarla en la celda
+            GameObject newStructureObj = new GameObject(structureToPlace.structureName);
+            newStructureObj.transform.position = cell.transform.position + new Vector3(0, 0, -1); // Colocar encima de la celda
+
+            // Asignar el sprite de la estructura
+            SpriteRenderer sr = newStructureObj.AddComponent<SpriteRenderer>();
+            sr.sprite = structureToPlace.structureSprite;  // Asignamos el sprite correctamente
+
+            // Almacenar la estructura en la celda
+            placedStructures[cell] = structureToPlace;
         }
     }
+
 }
