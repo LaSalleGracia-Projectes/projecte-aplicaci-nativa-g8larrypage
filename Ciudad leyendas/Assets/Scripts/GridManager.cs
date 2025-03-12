@@ -1,15 +1,17 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class GridManager : MonoBehaviour
 {
     public int rows = 10;
     public int cols = 10;
     public float cellSize = 1.0f;
-    public GameObject cellPrefab;  // Prefab de la celda (opcional)
-    public GameObject objectToPlace; // Objeto que se colocará en las celdas
+    public GameObject cellPrefab;  // Prefab de la celda
+    public GameObject objectToPlace; // Objeto a colocar en las celdas
 
     private Vector2 gridOrigin;
     private GameObject[,] gridArray; // Almacena las celdas creadas
+    private Dictionary<GameObject, GameObject> placedObjects = new Dictionary<GameObject, GameObject>(); // Relación Celda-Objeto
 
     void Start()
     {
@@ -19,7 +21,7 @@ public class GridManager : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetMouseButtonDown(0)) // Detección de toque o clic
+        if (Input.GetMouseButtonDown(0)) // Detección de clic/tap
         {
             DetectCellClick();
         }
@@ -29,23 +31,17 @@ public class GridManager : MonoBehaviour
     {
         Camera cam = Camera.main;
 
-        // Obtiene el tamaño visible de la pantalla en unidades del mundo
         float screenHeight = cam.orthographicSize * 2;
         float screenWidth = screenHeight * cam.aspect;
 
-        // Calcula el tamaño total del grid en Unity
         float gridWidth = cols * cellSize;
         float gridHeight = rows * cellSize;
 
-        // Centrar correctamente en la pantalla
         float startX = -gridWidth / 2;
         float startY = -gridHeight / 2;
 
         gridOrigin = new Vector2(startX, startY);
     }
-
-
-
 
     void GenerateGrid()
     {
@@ -62,6 +58,7 @@ public class GridManager : MonoBehaviour
 
                 GameObject cell = CreateCell(cellPosition);
                 gridArray[row, col] = cell;
+                placedObjects[cell] = null; // Inicialmente, cada celda está vacía
             }
         }
     }
@@ -103,9 +100,11 @@ public class GridManager : MonoBehaviour
 
     void PlaceObjectInCell(GameObject cell)
     {
-        if (objectToPlace != null)
+        if (placedObjects.ContainsKey(cell) && placedObjects[cell] == null) // Verifica que la celda esté vacía
         {
-            Instantiate(objectToPlace, cell.transform.position, Quaternion.identity);
+            Vector3 objectPosition = cell.transform.position + new Vector3(0, 0, -1); // Mueve el objeto hacia adelante
+            GameObject newObj = Instantiate(objectToPlace, objectPosition, Quaternion.identity);
+            placedObjects[cell] = newObj; // Guarda el objeto en la celda
         }
     }
 }
