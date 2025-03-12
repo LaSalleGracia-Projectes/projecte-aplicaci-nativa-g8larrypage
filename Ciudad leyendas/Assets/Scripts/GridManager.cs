@@ -29,16 +29,22 @@ public class GridManager : MonoBehaviour
     {
         Camera cam = Camera.main;
 
-        // Calcula el tamaño del grid en unidades de Unity
+        // Obtiene el tamaño visible de la pantalla en unidades del mundo
+        float screenHeight = cam.orthographicSize * 2;
+        float screenWidth = screenHeight * cam.aspect;
+
+        // Calcula el tamaño total del grid en Unity
         float gridWidth = cols * cellSize;
         float gridHeight = rows * cellSize;
 
-        // Calculamos el punto de inicio para centrar el grid
-        float startX = -gridWidth / 2 + (cellSize / 2);
-        float startY = -gridHeight / 2 + (cellSize / 2);
+        // Centrar correctamente en la pantalla
+        float startX = -gridWidth / 2;
+        float startY = -gridHeight / 2;
 
         gridOrigin = new Vector2(startX, startY);
     }
+
+
 
 
     void GenerateGrid()
