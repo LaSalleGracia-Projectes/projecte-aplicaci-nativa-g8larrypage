@@ -1,38 +1,70 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class GridManager : MonoBehaviour
 {
-    [SerializeField] private int _width, _height;
-    [SerializeField] private Tile _tilePrefab;
-    [SerializeField] private Transform _cam;
-    [SerializeField] private BuildingPlacer _placer;
+    public int rows = 10;
+    public int cols = 10;
+    public float cellSize = 1.0f;
+    public GameObject cellPrefab;  // Prefab de la celda (opcional)
 
-    private Dictionary<Vector2, Tile> _tiles;
+    private Vector2 screenSize;
+    private Vector2 gridOrigin;
 
     void Start()
     {
+        CalculateGridSize();
         GenerateGrid();
+    }
+
+    void CalculateGridSize()
+    {
+        // Obtiene el tamaño de la pantalla en unidades del mundo
+        Camera cam = Camera.main;
+        float screenHeight = cam.orthographicSize * 2;
+        float screenWidth = screenHeight * cam.aspect;
+
+        // Calcula el tamaño del grid en base a la pantalla
+        float gridWidth = cols * cellSize;
+        float gridHeight = rows * cellSize;
+
+        // Centra el grid en la pantalla
+        float startX = (screenWidth - gridWidth) / 2 - (screenWidth / 2);
+        float startY = (screenHeight - gridHeight) / 2 - (screenHeight / 2);
+
+        gridOrigin = new Vector2(startX, startY);
     }
 
     void GenerateGrid()
     {
-        _tiles = new Dictionary<Vector2, Tile>();
-        for (int x = 0; x < _width; x++)
+        for (int row = 0; row < rows; row++)
         {
-            for (int y = 0; y < _height; y++)
+            for (int col = 0; col < cols; col++)
             {
-                var spawnedTile = Instantiate(_tilePrefab, new Vector3(x, y), Quaternion.identity);
-                spawnedTile.name = $"Tile {x} {y}";
+                Vector2 cellPosition = new Vector2(
+                    gridOrigin.x + col * cellSize + (cellSize / 2),
+                    gridOrigin.y + row * cellSize + (cellSize / 2)
+                );
 
-                var isOffset = (x % 2 == 0 && y % 2 != 0) || (x % 2 != 0 && y % 2 == 0);
-                spawnedTile.Init(isOffset, _placer);
-
-                _tiles[new Vector2(x, y)] = spawnedTile;
+                CreateCell(cellPosition);
             }
         }
+    }
 
-        _cam.transform.position = new Vector3((float)_width / 2 - 0.5f, (float)_height / 2 - 0.5f, -10);
+    void CreateCell(Vector2 position)
+    {
+        if (cellPrefab != null)
+        {
+            Instantiate(cellPrefab, position, Quaternion.identity, transform);
+        }
+        else
+        {
+            GameObject cell = new GameObject("Cell");
+            cell.transform.position = position;
+            cell.transform.parent = transform;
+
+            // Agregar un SpriteRenderer opcional para ver las celdas
+            SpriteRenderer sr = cell.AddComponent<SpriteRenderer>();
+            sr.color = new Color(1, 1, 1, 0.2f); // Color semitransparente
+        }
     }
 }
