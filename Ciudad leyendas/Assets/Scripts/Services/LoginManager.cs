@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Models;
 using Supabase.Gotrue;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Constants = Supabase.Postgrest.Constants;
