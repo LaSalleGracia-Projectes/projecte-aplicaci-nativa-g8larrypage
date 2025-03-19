@@ -11,10 +11,10 @@ namespace Services
     {
         private readonly SupabaseManager _supabaseManager = SupabaseManager.Instance;
     
-        public async Task<bool> SignUp(string username, string email, string emailConfirm, 
+        public async Task<bool> SignUp(string email, string emailConfirm, 
             string password, string passwordConfirm, TMP_Text infoText)
         {
-            bool isValid = await VerifyInputFields(email, emailConfirm, password, passwordConfirm, username, infoText);
+            bool isValid = await VerifyInputFields(email, emailConfirm, password, passwordConfirm, infoText);
             if (!isValid)
                 return false;
             
@@ -49,8 +49,7 @@ namespace Services
         }
     
         private async Task<bool> VerifyInputFields(string signUpEmail, string signUpEmailConfirm, 
-            string signUpPassword, string signUpPasswordConfirm, 
-            string username, TMP_Text infoText)
+            string signUpPassword, string signUpPasswordConfirm, TMP_Text infoText)
         {
             Debug.Log("SignUp Email: " + signUpEmail);
             // Check if email and password are the same
@@ -97,47 +96,6 @@ namespace Services
                 {
                     infoText.text =
                         "Password must be at least 10 characters long, contain an uppercase letter, a lowercase letter, and a symbol!";
-                    infoText.color = Color.red;
-                }
-                return false;
-            }
-
-            // Check if username is valid
-            Debug.Log("SignUp Username: " + username);
-            if (username.Length < 3)
-            {
-                if (infoText != null)
-                {
-                    infoText.text = "Username must be at least 3 characters long!";
-                    infoText.color = Color.red;
-                }
-                return false;
-            }
-
-            // Check if username is unique
-            Debug.Log("SignUp Password: " + signUpPassword);
-            try
-            {
-                Debug.Log("Checking if username is unique...");
-                var supabase = await _supabaseManager.GetClient();
-                var response = await supabase.From<Jugador>().Select("nombre")
-                    .Filter("nombre", Constants.Operator.Equals, username).Get();
-                if (response.Model != null)
-                {
-                    if (infoText != null)
-                    {
-                        infoText.text = "Username already exists!";
-                        infoText.color = Color.red;
-                    }
-                    return false;
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.LogError("SignUp failed: " + e.Message);
-                if (infoText != null)
-                {
-                    infoText.text = "SignUp failed!";
                     infoText.color = Color.red;
                 }
                 return false;
