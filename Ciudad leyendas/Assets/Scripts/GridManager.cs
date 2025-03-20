@@ -1,47 +1,129 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using System.Collections.Generic;
 
 public class GridManager : MonoBehaviour
 {
-    [SerializeField] private int _width, _height;
+    public int rows = 10;
+    public int cols = 10;
+    public float cellSize = 1.0f;
+    public GameObject cellPrefab;  // Prefab de la celda
+    public Structure[] availableStructures;  // Esta propiedad debe ser pública o [SerializeField] para aparecer en el Inspector
 
-    [SerializeField] private Tile _tilePrefab;
 
-    [SerializeField] private Transform _cam;
-
-    private Dictionary<Vector2, Tile> _tiles;
+    private Vector2 gridOrigin;
+    private GameObject[,] gridArray; // Almacena las celdas creadas
+    private Dictionary<GameObject, Structure> placedStructures = new Dictionary<GameObject, Structure>(); // Relación Celda-Estructura
 
     void Start()
     {
+        CalculateGridSize();
         GenerateGrid();
+    }
+
+    void Update()
+    {
+        if (Input.GetMouseButtonDown(0)) // Detección de clic/tap
+        {
+            DetectCellClick();
+        }
+    }
+
+    void CalculateGridSize()
+    {
+        Camera cam = Camera.main;
+
+        float screenHeight = cam.orthographicSize * 2;
+        float screenWidth = screenHeight * cam.aspect;
+
+        float gridWidth = cols * cellSize;
+        float gridHeight = rows * cellSize;
+
+        float startX = -gridWidth / 2;
+        float startY = -gridHeight / 2;
+
+        gridOrigin = new Vector2(startX, startY);
     }
 
     void GenerateGrid()
     {
-        _tiles = new Dictionary<Vector2, Tile>();
-        for (int x = 0; x < _width; x++)
+        gridArray = new GameObject[rows, cols];
+
+        for (int row = 0; row < rows; row++)
         {
-            for (int y = 0; y < _height; y++)
+            for (int col = 0; col < cols; col++)
             {
-                var spawnedTile = Instantiate(_tilePrefab, new Vector3(x, y), Quaternion.identity);
-                spawnedTile.name = $"Tile {x} {y}";
+                Vector2 cellPosition = new Vector2(
+                    gridOrigin.x + col * cellSize + (cellSize / 2),
+                    gridOrigin.y + row * cellSize + (cellSize / 2)
+                );
 
-                var isOffset = (x % 2 == 0 && y % 2 != 0) || (x % 2 != 0 && y % 2 == 0);
-                spawnedTile.Init(isOffset);
-
-
-                _tiles[new Vector2(x, y)] = spawnedTile;
+                GameObject cell = CreateCell(cellPosition);
+                gridArray[row, col] = cell;
+                placedStructures[cell] = null; // Inicialmente, cada celda está vacía
             }
         }
-
-        _cam.transform.position = new Vector3((float)_width / 2 - 0.5f, (float)_height / 2 - 0.5f, -10);
     }
 
-    public Tile GetTileAtPosition(Vector2 pos)
+    GameObject CreateCell(Vector2 position)
     {
-        if (_tiles.TryGetValue(pos, out var tile)) return tile;
-        return null;
+        GameObject cell;
+
+        if (cellPrefab != null)
+        {
+            cell = Instantiate(cellPrefab, position, Quaternion.identity, transform);
+        }
+        else
+        {
+            cell = new GameObject("Cell");
+            cell.transform.position = position;
+            cell.transform.parent = transform;
+
+            // Agregar un SpriteRenderer opcional para ver las celdas
+            SpriteRenderer sr = cell.AddComponent<SpriteRenderer>();
+            sr.color = new Color(1, 1, 1, 0.2f);
+        }
+
+        cell.AddComponent<BoxCollider2D>(); // Agregar colisionador para detectar clics
+        return cell;
     }
+
+    void DetectCellClick()
+    {
+        Vector2 touchPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        RaycastHit2D hit = Physics2D.Raycast(touchPosition, Vector2.zero);
+
+        if (hit.collider != null)
+        {
+            GameObject clickedCell = hit.collider.gameObject;
+            PlaceStructureInCell(clickedCell);
+        }
+    }
+
+    void PlaceStructureInCell(GameObject cell)
+    {
+        // Si la celda no tiene una estructura, colocar una nueva
+        if (placedStructures.ContainsKey(cell) && placedStructures[cell] == null)
+        {
+            Structure structureToPlace = availableStructures[Random.Range(0, availableStructures.Length)]; // Elegir una estructura aleatoria
+
+            // Instanciar la estructura y colocarla en la celda
+            GameObject newStructureObj = new GameObject(structureToPlace.structureName);
+            newStructureObj.transform.position = cell.transform.position + new Vector3(0, 0, -1); // Colocar encima de la celda
+
+            // Asignar el sprite de la estructura
+            SpriteRenderer sr = newStructureObj.AddComponent<SpriteRenderer>();
+            sr.sprite = structureToPlace.structureSprite;  // Asignamos el sprite correctamente
+
+            // HACER QUE LA ESTRUCTURA SEA HIJA DE placedStructuresParent
+            if (FindObjectOfType<PopupManager>() != null)
+            {
+                newStructureObj.transform.SetParent(FindObjectOfType<PopupManager>().placedStructuresParent);
+            }
+
+            // Almacenar la estructura en la celda
+            placedStructures[cell] = structureToPlace;
+        }
+    }
+
+
 }
