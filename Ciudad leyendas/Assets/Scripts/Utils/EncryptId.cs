@@ -37,6 +37,8 @@ namespace Utils
 
         public string EncryptAndroidId(string androidId)
         {
+            Debug.Log("Android ID antes de encriptar: " + androidId);
+    
             int keyLength = 256 / 8;
             int iteraciones = 50000;
             byte[] fixedBytes = Encoding.UTF8.GetBytes("CiudadLeyendas2025");
@@ -64,7 +66,9 @@ namespace Utils
                         byte[] dataBytes = Encoding.UTF8.GetBytes(androidId);
                         byte[] bytesEncriptados = encryptor.TransformFinalBlock(dataBytes, 0, dataBytes.Length);
 
-                        return Convert.ToBase64String(bytesEncriptados);
+                        string resultado = Convert.ToBase64String(bytesEncriptados);
+                        Debug.Log("Android ID después de encriptar: " + resultado);
+                        return resultado;
                     }
                 }
             }
