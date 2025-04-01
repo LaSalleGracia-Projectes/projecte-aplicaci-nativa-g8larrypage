@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using System.Collections.Generic;
 
 public class GridManager : MonoBehaviour
@@ -6,23 +7,30 @@ public class GridManager : MonoBehaviour
     public int rows = 10;
     public int cols = 10;
     public float cellSize = 1.0f;
-    public GameObject cellPrefab;  // Prefab de la celda
-    public Structure[] availableStructures;  // Esta propiedad debe ser pública o [SerializeField] para aparecer en el Inspector
-
+    public GameObject cellPrefab;
+    public Structure[] availableStructures;
+    public Structure ayuntamiento;  // Referencia al ayuntamiento
+    public Button botonAyuntamiento;  // Botón para colocar el ayuntamiento
 
     private Vector2 gridOrigin;
-    private GameObject[,] gridArray; // Almacena las celdas creadas
-    private Dictionary<GameObject, Structure> placedStructures = new Dictionary<GameObject, Structure>(); // Relación Celda-Estructura
+    private GameObject[,] gridArray;
+    private Dictionary<GameObject, Structure> placedStructures = new Dictionary<GameObject, Structure>();
+    private bool placingAyuntamiento = false;  // Control para colocar solo 1 ayuntamiento
 
     void Start()
     {
         CalculateGridSize();
         GenerateGrid();
+
+        if (botonAyuntamiento != null)
+        {
+            botonAyuntamiento.onClick.AddListener(EnableAyuntamientoPlacement);
+        }
     }
 
     void Update()
     {
-        if (Input.GetMouseButtonDown(0)) // Detección de clic/tap
+        if (Input.GetMouseButtonDown(0) && placingAyuntamiento)
         {
             DetectCellClick();
         }
@@ -31,16 +39,12 @@ public class GridManager : MonoBehaviour
     void CalculateGridSize()
     {
         Camera cam = Camera.main;
-
         float screenHeight = cam.orthographicSize * 2;
         float screenWidth = screenHeight * cam.aspect;
-
         float gridWidth = cols * cellSize;
         float gridHeight = rows * cellSize;
-
         float startX = -gridWidth / 2;
         float startY = -gridHeight / 2;
-
         gridOrigin = new Vector2(startX, startY);
     }
 
@@ -59,7 +63,7 @@ public class GridManager : MonoBehaviour
 
                 GameObject cell = CreateCell(cellPosition);
                 gridArray[row, col] = cell;
-                placedStructures[cell] = null; // Inicialmente, cada celda está vacía
+                placedStructures[cell] = null;
             }
         }
     }
@@ -78,12 +82,11 @@ public class GridManager : MonoBehaviour
             cell.transform.position = position;
             cell.transform.parent = transform;
 
-            // Agregar un SpriteRenderer opcional para ver las celdas
             SpriteRenderer sr = cell.AddComponent<SpriteRenderer>();
             sr.color = new Color(1, 1, 1, 0.2f);
         }
 
-        cell.AddComponent<BoxCollider2D>(); // Agregar colisionador para detectar clics
+        cell.AddComponent<BoxCollider2D>();
         return cell;
     }
 
@@ -95,35 +98,37 @@ public class GridManager : MonoBehaviour
         if (hit.collider != null)
         {
             GameObject clickedCell = hit.collider.gameObject;
-            PlaceStructureInCell(clickedCell);
+
+            if (placingAyuntamiento)
+            {
+                PlaceAyuntamiento(clickedCell);
+            }
         }
     }
 
-    void PlaceStructureInCell(GameObject cell)
+    void PlaceAyuntamiento(GameObject cell)
     {
-        // Si la celda no tiene una estructura, colocar una nueva
         if (placedStructures.ContainsKey(cell) && placedStructures[cell] == null)
         {
-            Structure structureToPlace = availableStructures[Random.Range(0, availableStructures.Length)]; // Elegir una estructura aleatoria
+            GameObject newStructureObj = new GameObject(ayuntamiento.structureName);
+            newStructureObj.transform.position = cell.transform.position + new Vector3(0, 0, -1);
 
-            // Instanciar la estructura y colocarla en la celda
-            GameObject newStructureObj = new GameObject(structureToPlace.structureName);
-            newStructureObj.transform.position = cell.transform.position + new Vector3(0, 0, -1); // Colocar encima de la celda
-
-            // Asignar el sprite de la estructura
             SpriteRenderer sr = newStructureObj.AddComponent<SpriteRenderer>();
-            sr.sprite = structureToPlace.structureSprite;  // Asignamos el sprite correctamente
+            sr.sprite = ayuntamiento.structureSprite;
 
-            // HACER QUE LA ESTRUCTURA SEA HIJA DE placedStructuresParent
             if (FindObjectOfType<PopupManager>() != null)
             {
                 newStructureObj.transform.SetParent(FindObjectOfType<PopupManager>().placedStructuresParent);
             }
 
-            // Almacenar la estructura en la celda
-            placedStructures[cell] = structureToPlace;
+            placedStructures[cell] = ayuntamiento;
+
+            placingAyuntamiento = false; // Desactivar el modo de colocación después de poner 1 ayuntamiento
         }
     }
 
-
+    void EnableAyuntamientoPlacement()
+    {
+        placingAyuntamiento = true;  // Activar el modo para colocar el ayuntamiento
+    }
 }
