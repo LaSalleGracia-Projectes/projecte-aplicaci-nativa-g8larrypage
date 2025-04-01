@@ -8,29 +8,30 @@ public class GridManager : MonoBehaviour
     public int cols = 10;
     public float cellSize = 1.0f;
     public GameObject cellPrefab;
-    public Structure[] availableStructures;
-    public Structure ayuntamiento;  // Referencia al ayuntamiento
-    public Button botonAyuntamiento;  // Botón para colocar el ayuntamiento
+    public Structure[] availableStructures; // Lista de estructuras disponibles
+    public Button[] structureButtons; // Array de botones de las estructuras
 
     private Vector2 gridOrigin;
     private GameObject[,] gridArray;
     private Dictionary<GameObject, Structure> placedStructures = new Dictionary<GameObject, Structure>();
-    private bool placingAyuntamiento = false;  // Control para colocar solo 1 ayuntamiento
+    private Structure selectedStructure = null; // La estructura seleccionada para colocar
 
     void Start()
     {
         CalculateGridSize();
         GenerateGrid();
 
-        if (botonAyuntamiento != null)
+        // Asignar eventos a los botones
+        for (int i = 0; i < structureButtons.Length; i++)
         {
-            botonAyuntamiento.onClick.AddListener(EnableAyuntamientoPlacement);
+            int index = i; // Necesario para evitar problemas con las lambdas
+            structureButtons[i].onClick.AddListener(() => SelectStructure(index));
         }
     }
 
     void Update()
     {
-        if (Input.GetMouseButtonDown(0) && placingAyuntamiento)
+        if (Input.GetMouseButtonDown(0) && selectedStructure != null)
         {
             DetectCellClick();
         }
@@ -99,36 +100,39 @@ public class GridManager : MonoBehaviour
         {
             GameObject clickedCell = hit.collider.gameObject;
 
-            if (placingAyuntamiento)
+            if (selectedStructure != null)
             {
-                PlaceAyuntamiento(clickedCell);
+                PlaceStructureInCell(clickedCell);
             }
         }
     }
 
-    void PlaceAyuntamiento(GameObject cell)
+    void PlaceStructureInCell(GameObject cell)
     {
         if (placedStructures.ContainsKey(cell) && placedStructures[cell] == null)
         {
-            GameObject newStructureObj = new GameObject(ayuntamiento.structureName);
+            GameObject newStructureObj = new GameObject(selectedStructure.structureName);
             newStructureObj.transform.position = cell.transform.position + new Vector3(0, 0, -1);
 
             SpriteRenderer sr = newStructureObj.AddComponent<SpriteRenderer>();
-            sr.sprite = ayuntamiento.structureSprite;
+            sr.sprite = selectedStructure.structureSprite;
 
             if (FindObjectOfType<PopupManager>() != null)
             {
                 newStructureObj.transform.SetParent(FindObjectOfType<PopupManager>().placedStructuresParent);
             }
 
-            placedStructures[cell] = ayuntamiento;
+            placedStructures[cell] = selectedStructure;
 
-            placingAyuntamiento = false; // Desactivar el modo de colocación después de poner 1 ayuntamiento
+            selectedStructure = null; // Se debe volver a seleccionar otra estructura para seguir colocando
         }
     }
 
-    void EnableAyuntamientoPlacement()
+    void SelectStructure(int index)
     {
-        placingAyuntamiento = true;  // Activar el modo para colocar el ayuntamiento
+        if (index >= 0 && index < availableStructures.Length)
+        {
+            selectedStructure = availableStructures[index];
+        }
     }
 }
