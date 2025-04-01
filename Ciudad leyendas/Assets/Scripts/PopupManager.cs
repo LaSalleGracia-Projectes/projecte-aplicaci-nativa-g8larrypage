@@ -28,7 +28,7 @@ public class PopupManager : MonoBehaviour
     }
 
     // Cerrar la tienda y volver a mostrar el GridManager y las estructuras
-    void ClosePopup()
+    public void ClosePopup()
     {
         popupPanel.SetActive(false);
         gridManager.SetActive(true); // Muestra el GridManager nuevamente

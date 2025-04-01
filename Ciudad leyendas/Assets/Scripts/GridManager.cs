@@ -133,6 +133,14 @@ public class GridManager : MonoBehaviour
         if (index >= 0 && index < availableStructures.Length)
         {
             selectedStructure = availableStructures[index];
+
+            // Cerrar el PopupPanel al seleccionar una estructura
+            PopupManager popupManager = FindObjectOfType<PopupManager>();
+            if (popupManager != null)
+            {
+                popupManager.ClosePopup();
+            }
         }
     }
+
 }
