@@ -1,10 +1,11 @@
 using System;
 using Supabase.Postgrest.Attributes;
+using Supabase.Postgrest.Models;
 
 namespace Models
 {
     [Table("temporal_data")]
-    public class TemporalData
+    public class TemporalData : BaseModel
     {
         [PrimaryKey("id")]
         public Guid Id { get; set; }
