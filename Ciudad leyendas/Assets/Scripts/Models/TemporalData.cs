@@ -17,8 +17,5 @@ namespace Models
         
         [Column("nuevos_pasos_sync")]
         public int NuevosPasosSync { get; set; }
-        
-        [Column("salt")]
-        public string Salt { get; set; }
     }
 }
