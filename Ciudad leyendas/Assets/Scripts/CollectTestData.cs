@@ -21,6 +21,7 @@ public class CollectTestData : MonoBehaviour
             _androidId = PlayerPrefs.GetString("AndroidId");
             Debug.Log("Stored Android ID: " + _androidId);
             text.text = _androidId;
+            GetTempData();
             return;
         }
 
@@ -39,7 +40,7 @@ public class CollectTestData : MonoBehaviour
         {
             var supabase = await SupabaseManager.Instance.GetClient();
             var response = await supabase.From<TemporalData>()
-                .Select("id, android_id, pasos_totales, nuevos_pasos_sync")
+                .Select("id, android_id, pasos_totales, pasos_nuevos_sync")
                 .Filter("android_id", Supabase.Postgrest.Constants.Operator.Equals, _androidId)
                 .Get();
 

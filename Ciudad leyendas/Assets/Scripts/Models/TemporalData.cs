@@ -16,7 +16,7 @@ namespace Models
         [Column("pasos_totales")]
         public int PasosTotales { get; set; }
         
-        [Column("nuevos_pasos_sync")]
+        [Column("pasos_nuevos_sync")]
         public int NuevosPasosSync { get; set; }
     }
 }

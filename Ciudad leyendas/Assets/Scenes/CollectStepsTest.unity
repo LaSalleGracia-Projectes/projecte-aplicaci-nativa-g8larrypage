@@ -619,7 +619,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   text: {fileID: 629508927}
-  stepsText: {fileID: 0}
+  stepsText: {fileID: 2095038872}
 --- !u!1 &2095038870
 GameObject:
   m_ObjectHideFlags: 0
