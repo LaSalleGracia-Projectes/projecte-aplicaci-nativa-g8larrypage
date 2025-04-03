@@ -1,47 +1,146 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using System.Collections.Generic;
 
 public class GridManager : MonoBehaviour
 {
-    [SerializeField] private int _width, _height;
+    public int rows = 10;
+    public int cols = 10;
+    public float cellSize = 1.0f;
+    public GameObject cellPrefab;
+    public Structure[] availableStructures; // Lista de estructuras disponibles
+    public Button[] structureButtons; // Array de botones de las estructuras
 
-    [SerializeField] private Tile _tilePrefab;
-
-    [SerializeField] private Transform _cam;
-
-    private Dictionary<Vector2, Tile> _tiles;
+    private Vector2 gridOrigin;
+    private GameObject[,] gridArray;
+    private Dictionary<GameObject, Structure> placedStructures = new Dictionary<GameObject, Structure>();
+    private Structure selectedStructure = null; // La estructura seleccionada para colocar
 
     void Start()
     {
+        CalculateGridSize();
         GenerateGrid();
+
+        // Asignar eventos a los botones
+        for (int i = 0; i < structureButtons.Length; i++)
+        {
+            int index = i; // Necesario para evitar problemas con las lambdas
+            structureButtons[i].onClick.AddListener(() => SelectStructure(index));
+        }
+    }
+
+    void Update()
+    {
+        if (Input.GetMouseButtonDown(0) && selectedStructure != null)
+        {
+            DetectCellClick();
+        }
+    }
+
+    void CalculateGridSize()
+    {
+        Camera cam = Camera.main;
+        float screenHeight = cam.orthographicSize * 2;
+        float screenWidth = screenHeight * cam.aspect;
+        float gridWidth = cols * cellSize;
+        float gridHeight = rows * cellSize;
+        float startX = -gridWidth / 2;
+        float startY = -gridHeight / 2;
+        gridOrigin = new Vector2(startX, startY);
     }
 
     void GenerateGrid()
     {
-        _tiles = new Dictionary<Vector2, Tile>();
-        for (int x = 0; x < _width; x++)
+        gridArray = new GameObject[rows, cols];
+
+        for (int row = 0; row < rows; row++)
         {
-            for (int y = 0; y < _height; y++)
+            for (int col = 0; col < cols; col++)
             {
-                var spawnedTile = Instantiate(_tilePrefab, new Vector3(x, y), Quaternion.identity);
-                spawnedTile.name = $"Tile {x} {y}";
+                Vector2 cellPosition = new Vector2(
+                    gridOrigin.x + col * cellSize + (cellSize / 2),
+                    gridOrigin.y + row * cellSize + (cellSize / 2)
+                );
 
-                var isOffset = (x % 2 == 0 && y % 2 != 0) || (x % 2 != 0 && y % 2 == 0);
-                spawnedTile.Init(isOffset);
-
-
-                _tiles[new Vector2(x, y)] = spawnedTile;
+                GameObject cell = CreateCell(cellPosition);
+                gridArray[row, col] = cell;
+                placedStructures[cell] = null;
             }
         }
-
-        _cam.transform.position = new Vector3((float)_width / 2 - 0.5f, (float)_height / 2 - 0.5f, -10);
     }
 
-    public Tile GetTileAtPosition(Vector2 pos)
+    GameObject CreateCell(Vector2 position)
     {
-        if (_tiles.TryGetValue(pos, out var tile)) return tile;
-        return null;
+        GameObject cell;
+
+        if (cellPrefab != null)
+        {
+            cell = Instantiate(cellPrefab, position, Quaternion.identity, transform);
+        }
+        else
+        {
+            cell = new GameObject("Cell");
+            cell.transform.position = position;
+            cell.transform.parent = transform;
+
+            SpriteRenderer sr = cell.AddComponent<SpriteRenderer>();
+            sr.color = new Color(1, 1, 1, 0.2f);
+        }
+
+        cell.AddComponent<BoxCollider2D>();
+        return cell;
     }
+
+    void DetectCellClick()
+    {
+        Vector2 touchPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        RaycastHit2D hit = Physics2D.Raycast(touchPosition, Vector2.zero);
+
+        if (hit.collider != null)
+        {
+            GameObject clickedCell = hit.collider.gameObject;
+
+            if (selectedStructure != null)
+            {
+                PlaceStructureInCell(clickedCell);
+            }
+        }
+    }
+
+    void PlaceStructureInCell(GameObject cell)
+    {
+        if (placedStructures.ContainsKey(cell) && placedStructures[cell] == null)
+        {
+            GameObject newStructureObj = new GameObject(selectedStructure.structureName);
+            newStructureObj.transform.position = cell.transform.position + new Vector3(0, 0, -1);
+
+            SpriteRenderer sr = newStructureObj.AddComponent<SpriteRenderer>();
+            sr.sprite = selectedStructure.structureSprite;
+
+            if (FindObjectOfType<PopupManager>() != null)
+            {
+                newStructureObj.transform.SetParent(FindObjectOfType<PopupManager>().placedStructuresParent);
+            }
+
+            placedStructures[cell] = selectedStructure;
+
+            selectedStructure = null; // Se debe volver a seleccionar otra estructura para seguir colocando
+        }
+    }
+
+    void SelectStructure(int index)
+    {
+        if (index >= 0 && index < availableStructures.Length)
+        {
+            selectedStructure = availableStructures[index];
+
+            // Cerrar el PopupPanel al seleccionar una estructura
+            PopupManager popupManager = FindObjectOfType<PopupManager>();
+            if (popupManager != null)
+            {
+                popupManager.ClosePopup();
+            }
+        }
+    }
+
 }

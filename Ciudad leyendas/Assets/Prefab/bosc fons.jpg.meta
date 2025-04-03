@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 98e81c7f26478734eaddbe108e165623
+guid: fa9fc96ed4400ca43a10a42fdf561d6c
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 6934086728263231946
-    second: icon_0
+      213: -2388026172626770176
+    second: bosc fons_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -113,13 +113,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: icon_0
+      name: bosc fons_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 267
-        height: 200
+        width: 559
+        height: 970
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: ac961e71423da3060800000000000000
-      internalID: 6934086728263231946
+      spriteID: 007ee3a29d60cded0800000000000000
+      internalID: -2388026172626770176
       vertices: []
       indices: 
       edges: []
@@ -148,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      icon_0: 6934086728263231946
+      bosc fons_0: -2388026172626770176
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
