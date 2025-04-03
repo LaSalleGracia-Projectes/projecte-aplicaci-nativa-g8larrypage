@@ -21,5 +21,14 @@ namespace Models
         
         [Column("id_clan")]
         public int? IdClan { get; set; }
+        
+        [Column("experiencia")]
+        public int Experiencia { get; set; }
+        
+        [Column("racha_pasos")]
+        public int RachaPasos { get; set; }
+        
+        [Column("total_raids")]
+        public int TotalRaids { get; set; }
     }
 }
