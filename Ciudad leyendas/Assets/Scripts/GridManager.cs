@@ -8,23 +8,23 @@ public class GridManager : MonoBehaviour
     public int cols = 10;
     public float cellSize = 1.0f;
     public GameObject cellPrefab;
-    public Structure[] availableStructures; // Lista de estructuras disponibles
-    public Button[] structureButtons; // Array de botones de las estructuras
+    public Structure[] availableStructures;
+    public Button[] structureButtons;
 
     private Vector2 gridOrigin;
-    private GameObject[,] gridArray;
-    private Dictionary<GameObject, Structure> placedStructures = new Dictionary<GameObject, Structure>();
-    private Structure selectedStructure = null; // La estructura seleccionada para colocar
+    private Cell[,] gridArray;
+    private Dictionary<int, Structure> placedStructures = new Dictionary<int, Structure>(); // Relación ID-Estructura
+    private Structure selectedStructure = null;
+    private int nextCellID = 1; // ID autoincremental para las celdas
 
     void Start()
     {
         CalculateGridSize();
         GenerateGrid();
 
-        // Asignar eventos a los botones
         for (int i = 0; i < structureButtons.Length; i++)
         {
-            int index = i; // Necesario para evitar problemas con las lambdas
+            int index = i;
             structureButtons[i].onClick.AddListener(() => SelectStructure(index));
         }
     }
@@ -51,7 +51,7 @@ public class GridManager : MonoBehaviour
 
     void GenerateGrid()
     {
-        gridArray = new GameObject[rows, cols];
+        gridArray = new Cell[rows, cols];
 
         for (int row = 0; row < rows; row++)
         {
@@ -62,9 +62,10 @@ public class GridManager : MonoBehaviour
                     gridOrigin.y + row * cellSize + (cellSize / 2)
                 );
 
-                GameObject cell = CreateCell(cellPosition);
-                gridArray[row, col] = cell;
-                placedStructures[cell] = null;
+                GameObject cellObject = CreateCell(cellPosition);
+                Cell cellComponent = cellObject.AddComponent<Cell>();
+                cellComponent.cellID = nextCellID++; // Asigna un ID único
+                gridArray[row, col] = cellComponent;
             }
         }
     }
@@ -98,34 +99,31 @@ public class GridManager : MonoBehaviour
 
         if (hit.collider != null)
         {
-            GameObject clickedCell = hit.collider.gameObject;
+            Cell clickedCell = hit.collider.gameObject.GetComponent<Cell>();
 
-            if (selectedStructure != null)
+            if (selectedStructure != null && clickedCell.placedStructure == null)
             {
                 PlaceStructureInCell(clickedCell);
             }
         }
     }
 
-    void PlaceStructureInCell(GameObject cell)
+    void PlaceStructureInCell(Cell cell)
     {
-        if (placedStructures.ContainsKey(cell) && placedStructures[cell] == null)
+        GameObject newStructureObj = new GameObject(selectedStructure.structureName);
+        newStructureObj.transform.position = cell.transform.position + new Vector3(0, 0, -1);
+
+        SpriteRenderer sr = newStructureObj.AddComponent<SpriteRenderer>();
+        sr.sprite = selectedStructure.structureSprite;
+
+        if (FindObjectOfType<PopupManager>() != null)
         {
-            GameObject newStructureObj = new GameObject(selectedStructure.structureName);
-            newStructureObj.transform.position = cell.transform.position + new Vector3(0, 0, -1);
-
-            SpriteRenderer sr = newStructureObj.AddComponent<SpriteRenderer>();
-            sr.sprite = selectedStructure.structureSprite;
-
-            if (FindObjectOfType<PopupManager>() != null)
-            {
-                newStructureObj.transform.SetParent(FindObjectOfType<PopupManager>().placedStructuresParent);
-            }
-
-            placedStructures[cell] = selectedStructure;
-
-            selectedStructure = null; // Se debe volver a seleccionar otra estructura para seguir colocando
+            newStructureObj.transform.SetParent(FindObjectOfType<PopupManager>().placedStructuresParent);
         }
+
+        cell.AssignStructure(selectedStructure);
+        placedStructures[cell.cellID] = selectedStructure; // Guarda la estructura con el ID de la celda
+        selectedStructure = null;
     }
 
     void SelectStructure(int index)
@@ -134,7 +132,6 @@ public class GridManager : MonoBehaviour
         {
             selectedStructure = availableStructures[index];
 
-            // Cerrar el PopupPanel al seleccionar una estructura
             PopupManager popupManager = FindObjectOfType<PopupManager>();
             if (popupManager != null)
             {
@@ -142,5 +139,4 @@ public class GridManager : MonoBehaviour
             }
         }
     }
-
 }
