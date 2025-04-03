@@ -11,31 +11,26 @@ public class PopupManager : MonoBehaviour
 
     void Start()
     {
-        // Asegurar que la tienda está oculta al inicio
         popupPanel.SetActive(false);
 
-        // Asignar funciones a los botones
         openPopupButton.onClick.AddListener(ShowPopup);
         closeButton.onClick.AddListener(ClosePopup);
     }
 
-    // Mostrar la tienda y ocultar el GridManager y las estructuras colocadas
-    void ShowPopup()
+    public void ShowPopup()
     {
         popupPanel.SetActive(true);
-        gridManager.SetActive(false); // Oculta el GridManager
-        TogglePlacedStructures(false); // Oculta las construcciones colocadas
+        gridManager.SetActive(false);
+        TogglePlacedStructures(false);
     }
 
-    // Cerrar la tienda y volver a mostrar el GridManager y las estructuras
     public void ClosePopup()
     {
         popupPanel.SetActive(false);
-        gridManager.SetActive(true); // Muestra el GridManager nuevamente
-        TogglePlacedStructures(true); // Muestra las construcciones de nuevo
+        gridManager.SetActive(true);
+        TogglePlacedStructures(true);
     }
 
-    // Método para mostrar u ocultar las estructuras
     void TogglePlacedStructures(bool state)
     {
         if (placedStructuresParent != null)
