@@ -1,6 +1,9 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using Services;  // Para la conexión a Supabase
+using Models;   // Para el modelo Edificio
+using System;   // Para excepciones
 
 public class GridManager : MonoBehaviour
 {
@@ -8,23 +11,23 @@ public class GridManager : MonoBehaviour
     public int cols = 10;
     public float cellSize = 1.0f;
     public GameObject cellPrefab;
-    public Structure[] availableStructures;
-    public Button[] structureButtons;
+    public Structure[] availableStructures; // Lista de estructuras disponibles
+    public Button[] structureButtons; // Array de botones de las estructuras
 
     private Vector2 gridOrigin;
-    private Cell[,] gridArray;
-    private Dictionary<int, Structure> placedStructures = new Dictionary<int, Structure>(); // Relación ID-Estructura
-    private Structure selectedStructure = null;
-    private int nextCellID = 1; // ID autoincremental para las celdas
+    private Cell[,] gridArray; // Usamos Cell en vez de GameObject
+    private Dictionary<GameObject, Structure> placedStructures = new Dictionary<GameObject, Structure>();
+    private Structure selectedStructure = null; // La estructura seleccionada para colocar
 
     void Start()
     {
         CalculateGridSize();
         GenerateGrid();
 
+        // Asignar eventos a los botones
         for (int i = 0; i < structureButtons.Length; i++)
         {
-            int index = i;
+            int index = i; // Necesario para evitar problemas con las lambdas
             structureButtons[i].onClick.AddListener(() => SelectStructure(index));
         }
     }
@@ -51,7 +54,7 @@ public class GridManager : MonoBehaviour
 
     void GenerateGrid()
     {
-        gridArray = new Cell[rows, cols];
+        gridArray = new Cell[rows, cols]; // Cambiado a Cell
 
         for (int row = 0; row < rows; row++)
         {
@@ -63,9 +66,13 @@ public class GridManager : MonoBehaviour
                 );
 
                 GameObject cellObject = CreateCell(cellPosition);
-                Cell cellComponent = cellObject.AddComponent<Cell>();
-                cellComponent.cellID = nextCellID++; // Asigna un ID único
-                gridArray[row, col] = cellComponent;
+                Cell cell = cellObject.GetComponent<Cell>(); // Obtener el componente Cell
+
+                // Asigna el ID de celda único
+                cell.cellID = row * cols + col;
+
+                // Agrega la celda al array
+                gridArray[row, col] = cell;
             }
         }
     }
@@ -89,6 +96,7 @@ public class GridManager : MonoBehaviour
         }
 
         cell.AddComponent<BoxCollider2D>();
+        cell.AddComponent<Cell>(); // Asegúrate de agregar el componente Cell a cada celda
         return cell;
     }
 
@@ -99,31 +107,35 @@ public class GridManager : MonoBehaviour
 
         if (hit.collider != null)
         {
-            Cell clickedCell = hit.collider.gameObject.GetComponent<Cell>();
+            GameObject clickedCell = hit.collider.gameObject;
 
-            if (selectedStructure != null && clickedCell.placedStructure == null)
+            if (selectedStructure != null)
             {
                 PlaceStructureInCell(clickedCell);
             }
         }
     }
 
-    void PlaceStructureInCell(Cell cell)
+    void PlaceStructureInCell(GameObject cellObject)
     {
-        GameObject newStructureObj = new GameObject(selectedStructure.structureName);
-        newStructureObj.transform.position = cell.transform.position + new Vector3(0, 0, -1);
-
-        SpriteRenderer sr = newStructureObj.AddComponent<SpriteRenderer>();
-        sr.sprite = selectedStructure.structureSprite;
-
-        if (FindObjectOfType<PopupManager>() != null)
+        Cell cell = cellObject.GetComponent<Cell>();  // Obtener el componente Cell
+        if (cell != null && cell.placedStructure == null) // Si no tiene estructura, colocamos una nueva
         {
-            newStructureObj.transform.SetParent(FindObjectOfType<PopupManager>().placedStructuresParent);
-        }
+            GameObject newStructureObj = new GameObject(selectedStructure.structureName);
+            newStructureObj.transform.position = cell.transform.position + new Vector3(0, 0, -1);
 
-        cell.AssignStructure(selectedStructure);
-        placedStructures[cell.cellID] = selectedStructure; // Guarda la estructura con el ID de la celda
-        selectedStructure = null;
+            SpriteRenderer sr = newStructureObj.AddComponent<SpriteRenderer>();
+            sr.sprite = selectedStructure.structureSprite;
+
+            cell.placedStructure = selectedStructure;  // Asigna la estructura a la celda
+
+            placedStructures[cellObject] = selectedStructure;
+
+            // Guardar la estructura en Supabase
+            SaveBuildingToSupabase(cell, selectedStructure);
+
+            selectedStructure = null; // Vuelve a deseleccionar la estructura
+        }
     }
 
     void SelectStructure(int index)
@@ -132,6 +144,7 @@ public class GridManager : MonoBehaviour
         {
             selectedStructure = availableStructures[index];
 
+            // Cerrar el PopupPanel al seleccionar una estructura
             PopupManager popupManager = FindObjectOfType<PopupManager>();
             if (popupManager != null)
             {
@@ -139,4 +152,34 @@ public class GridManager : MonoBehaviour
             }
         }
     }
+
+    // Función para guardar el edificio en Supabase
+    private async void SaveBuildingToSupabase(Cell cell, Structure structure)
+    {
+        try
+        {
+            var client = await SupabaseManager.Instance.GetClient();
+
+            // Crear el objeto del edificio para insertar
+            var edificio = new Edificio
+            {
+                TipoEdificio = structure.structureName,
+                Vida = structure.health,
+                Daño = structure.damage,
+                IdCiudad = 1, // Asigna el ID de ciudad correspondiente
+                IdSkin = 1, // Asigna el ID de skin correspondiente
+                Cuadrado = cell.cellID
+            };
+
+            // Insertar el edificio en la base de datos
+            var insertResponse = await client.From<Edificio>().Insert(edificio);
+
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Error al guardar edificio en Supabase: {ex.Message}");
+        }
+    }
+
+
 }
