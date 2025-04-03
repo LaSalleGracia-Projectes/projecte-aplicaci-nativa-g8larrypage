@@ -5,6 +5,7 @@ using Supabase.Gotrue;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Utils;
 using Constants = Supabase.Postgrest.Constants;
 
 namespace Services
@@ -35,6 +36,9 @@ namespace Services
                     // Save session data
                     SaveSession(response);
                     
+                    // Sincronizar pasos desde datos temporales
+                    await SyncTemporalStepsWithPlayer(response.User.Id);
+                    
                     return true;
                 }
                 return false;
@@ -64,6 +68,7 @@ namespace Services
                     Debug.Log("Live session found. User already logged in: " + session.User.Email);
                     SaveSession(session); // Update stored session with the live one
                     await CheckPlayerExists(session.User.Id);
+                    await SyncTemporalStepsWithPlayer(session.User.Id);
                     return true;
                 }
                 else
@@ -74,6 +79,7 @@ namespace Services
                     {
                         Debug.Log("Using stored session for user ID: " + storedUserId);
                         await CheckPlayerExists(storedUserId);
+                        await SyncTemporalStepsWithPlayer(storedUserId);
                         return true;
                     }
                     
@@ -91,6 +97,7 @@ namespace Services
                 {
                     Debug.Log("Using stored session as fallback for user ID: " + storedUserId);
                     await CheckPlayerExists(storedUserId);
+                    await SyncTemporalStepsWithPlayer(storedUserId);
                     return true;
                 }
                 
@@ -151,7 +158,7 @@ namespace Services
             try
             {
                 var supabase = await _supabaseManager.GetClient();
-                var response = await supabase.From<Jugador>().Select("nombre")
+                var response = await supabase.From<Jugador>().Select("nombre, pasos_totales")
                     .Filter("id_usuario", Constants.Operator.Equals, userId).Get();
 
                 if (response.Models.Count == 0)
@@ -159,17 +166,20 @@ namespace Services
                     Debug.Log("Player does not exist, creating player...");
 
                     string defaultName = "Player" + DateTime.Now.Ticks % 10000;
+                    
+                    // Obtener los pasos temporales para el nuevo jugador
+                    int pasosTotales = await GetTemporalStepsData();
 
                     var model = new Jugador
                     {
                         Nombre = defaultName,
-                        PasosTotales = 0,
+                        PasosTotales = pasosTotales,
                         IdUsuario = Guid.Parse(userId),
                         IdClan = null,
                     };
 
                     var response2 = await supabase.From<Jugador>().Insert(model);
-                    Debug.Log("Player created: " + response2.Models[0].Nombre);
+                    Debug.Log($"Player created: {response2.Models[0].Nombre} with {pasosTotales} steps");
                 }
                 else
                 {
@@ -181,10 +191,89 @@ namespace Services
                 Debug.LogError("Error checking player: " + e.Message);
             }
         }
+        
+        private async Task<int> GetTemporalStepsData()
+        {
+            try
+            {
+                // Obtener el Android ID encriptado
+                string androidId = PlayerPrefs.GetString("AndroidId");
+                if (string.IsNullOrEmpty(androidId))
+                {
+                    EncryptId encryptId = new EncryptId();
+                    androidId = encryptId.EncryptAndroidId(encryptId.GetAndroidId());
+                    PlayerPrefs.SetString("AndroidId", androidId);
+                }
+                
+                // Buscar datos temporales para este dispositivo
+                var supabase = await _supabaseManager.GetClient();
+                var response = await supabase.From<TemporalData>()
+                    .Select("pasos_totales")
+                    .Filter("android_id", Constants.Operator.Equals, androidId)
+                    .Get();
+
+                if (response.Models.Count > 0)
+                {
+                    return response.Models[0].PasosTotales;
+                }
+                
+                return 0;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Error obteniendo datos temporales: {e.Message}");
+                return 0;
+            }
+        }
+        
+        private async Task SyncTemporalStepsWithPlayer(string userId)
+        {
+            try
+            {
+                int pasosTotalesTemporales = await GetTemporalStepsData();
+                
+                if (pasosTotalesTemporales <= 0)
+                {
+                    Debug.Log("No hay pasos temporales para sincronizar");
+                    return;
+                }
+                
+                var supabase = await _supabaseManager.GetClient();
+                var response = await supabase.From<Jugador>()
+                    .Select("id_jugador, pasos_totales")
+                    .Filter("id_usuario", Constants.Operator.Equals, userId)
+                    .Get();
+
+                if (response.Models.Count > 0)
+                {
+                    var jugador = response.Models[0];
+                    
+                    if (pasosTotalesTemporales > jugador.PasosTotales)
+                    {
+                        Debug.Log($"Actualizando pasos del jugador de {jugador.PasosTotales} a {pasosTotalesTemporales}");
+                        jugador.PasosTotales = pasosTotalesTemporales;
+                        await supabase.From<Jugador>().Update(jugador);
+                        Debug.Log("Pasos del jugador actualizados correctamente");
+                    }
+                    else
+                    {
+                        Debug.Log($"El jugador ya tiene más pasos ({jugador.PasosTotales}) que los temporales ({pasosTotalesTemporales})");
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning("No se encontró el jugador al intentar sincronizar pasos");
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Error sincronizando pasos temporales: {e.Message}");
+            }
+        }
 
         public void GoToGame()
         {
-            SceneManager.LoadScene("GridTest");
+            SceneManager.LoadScene("CollectStepsTest");
         }
     }
 }
