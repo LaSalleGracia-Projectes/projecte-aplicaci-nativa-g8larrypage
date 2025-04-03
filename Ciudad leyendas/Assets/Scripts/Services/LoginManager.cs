@@ -165,7 +165,7 @@ namespace Services
                         Nombre = defaultName,
                         PasosTotales = 0,
                         IdUsuario = Guid.Parse(userId),
-                        IdClan = null
+                        IdClan = null,
                     };
 
                     var response2 = await supabase.From<Jugador>().Insert(model);
