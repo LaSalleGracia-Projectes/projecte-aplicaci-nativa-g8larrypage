@@ -165,7 +165,7 @@ namespace Services
                 {
                     Debug.Log("Player does not exist, creating player...");
 
-                    string defaultName = "Player" + DateTime.Now.Ticks % 10000;
+                    string defaultName = "Player" + DateTime.Now.Ticks % 100000;
                     
                     // Obtener los pasos temporales para el nuevo jugador
                     int pasosTotales = await GetTemporalStepsData();
@@ -179,7 +179,17 @@ namespace Services
                     };
 
                     var response2 = await supabase.From<Jugador>().Insert(model);
+
+                    var ciudad = new Ciudad
+                    {
+                        Nombre = ("Ciudad de " + defaultName),
+                        NivelCiudad = 1,
+                        IdJugador = response2.Models[0].IdJugador
+                    };
+                    var response3 = await supabase.From<Ciudad>().Insert(ciudad);
+                    
                     Debug.Log($"Player created: {response2.Models[0].Nombre} with {pasosTotales} steps");
+                    Debug.Log("City created: " + response3.Models[0].IdCiudad);
                 }
                 else
                 {
