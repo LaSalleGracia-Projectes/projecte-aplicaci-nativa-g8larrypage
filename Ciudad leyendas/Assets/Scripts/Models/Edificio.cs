@@ -16,8 +16,8 @@ namespace Models
         [Column("vida")]
         public int Vida { get; set; }
 
-        [Column("daño")]
-        public int Daño { get; set; }
+        [Column("dano")]
+        public int Dano { get; set; }
 
         [Column("id_ciudad")]
         public long IdCiudad { get; set; }

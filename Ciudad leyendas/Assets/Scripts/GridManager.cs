@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
-using Services;  // Para la conexión a Supabase
+using Services;  // Para la conexiï¿½n a Supabase
 using Models;   // Para el modelo Edificio
 using System;   // Para excepciones
 
@@ -68,7 +68,7 @@ public class GridManager : MonoBehaviour
                 GameObject cellObject = CreateCell(cellPosition);
                 Cell cell = cellObject.GetComponent<Cell>(); // Obtener el componente Cell
 
-                // Asigna el ID de celda único
+                // Asigna el ID de celda ï¿½nico
                 cell.cellID = row * cols + col;
 
                 // Agrega la celda al array
@@ -96,7 +96,7 @@ public class GridManager : MonoBehaviour
         }
 
         cell.AddComponent<BoxCollider2D>();
-        cell.AddComponent<Cell>(); // Asegúrate de agregar el componente Cell a cada celda
+        cell.AddComponent<Cell>(); // Asegï¿½rate de agregar el componente Cell a cada celda
         return cell;
     }
 
@@ -153,7 +153,7 @@ public class GridManager : MonoBehaviour
         }
     }
 
-    // Función para guardar el edificio en Supabase
+    // Funciï¿½n para guardar el edificio en Supabase
     private async void SaveBuildingToSupabase(Cell cell, Structure structure)
     {
         try
@@ -165,7 +165,7 @@ public class GridManager : MonoBehaviour
             {
                 TipoEdificio = structure.structureName,
                 Vida = structure.health,
-                Daño = structure.damage,
+                Dano = structure.damage,
                 IdCiudad = 1, // Asigna el ID de ciudad correspondiente
                 IdSkin = 1, // Asigna el ID de skin correspondiente
                 Cuadrado = cell.cellID
