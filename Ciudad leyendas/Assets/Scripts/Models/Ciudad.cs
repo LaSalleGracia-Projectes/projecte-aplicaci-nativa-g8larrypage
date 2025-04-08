@@ -8,15 +8,15 @@ namespace Models
     public class Ciudad : BaseModel
     {
         [PrimaryKey("id_ciudad")]
-        public long IdCiudad { get; set; }
-
+        public int IdCiudad { get; set; }
+        
         [Column("nombre")]
         public string Nombre { get; set; }
-
+        
         [Column("nivel_ciudad")]
         public int NivelCiudad { get; set; }
-
+        
         [Column("id_jugador")]
-        public long IdJugador { get; set; }
+        public int IdJugador { get; set; }
     }
 }
