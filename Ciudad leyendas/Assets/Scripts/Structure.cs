@@ -4,17 +4,25 @@ using UnityEngine;
 public class Structure
 {
     public string structureName;
-    public int skinId;  // ID de skin en vez del sprite
+    public Sprite structureSprite;
     public int health;
     public int damage;
     public int price;
+    public long skinId; // Nueva propiedad
 
-    public Structure(string name, int skinId, int health, int damage, int price)
+    public Structure(string name, Sprite sprite, int health, int damage, int price, long skinId = 1)
     {
         structureName = name;
-        this.skinId = skinId;
+        structureSprite = sprite;
         this.health = health;
         this.damage = damage;
         this.price = price;
+        this.skinId = skinId;
+    }
+
+    public Structure CloneWithSkin(long skinId)
+    {
+        var sprite = SkinManager.Instance.GetSpriteForSkin(skinId);
+        return new Structure(structureName, sprite, health, damage, price, skinId);
     }
 }

@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using Services;
 using Models;
 using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 public class GridManager : MonoBehaviour
 {
@@ -13,6 +15,9 @@ public class GridManager : MonoBehaviour
     public GameObject cellPrefab;
     public Structure[] availableStructures;
     public Button[] structureButtons;
+    public Transform placedStructuresParent;
+
+    public long ciudadId = 1; // ID de ciudad a cargar. Puedes cambiarlo dinámicamente según el jugador.
 
     private Vector2 gridOrigin;
     private Cell[,] gridArray;
@@ -29,6 +34,8 @@ public class GridManager : MonoBehaviour
             int index = i;
             structureButtons[i].onClick.AddListener(() => SelectStructure(index));
         }
+
+        LoadBuildingsFromSupabase(); // Carga de edificios al iniciar
     }
 
     void Update()
@@ -74,14 +81,18 @@ public class GridManager : MonoBehaviour
 
     GameObject CreateCell(Vector2 position)
     {
-        GameObject cell = cellPrefab != null ?
-            Instantiate(cellPrefab, position, Quaternion.identity, transform) :
-            new GameObject("Cell");
+        GameObject cell;
 
-        if (cellPrefab == null)
+        if (cellPrefab != null)
         {
+            cell = Instantiate(cellPrefab, position, Quaternion.identity, transform);
+        }
+        else
+        {
+            cell = new GameObject("Cell");
             cell.transform.position = position;
             cell.transform.parent = transform;
+
             SpriteRenderer sr = cell.AddComponent<SpriteRenderer>();
             sr.color = new Color(1, 1, 1, 0.2f);
         }
@@ -99,29 +110,29 @@ public class GridManager : MonoBehaviour
         if (hit.collider != null)
         {
             GameObject clickedCell = hit.collider.gameObject;
-
             if (selectedStructure != null)
             {
-                PlaceStructureInCell(clickedCell);
+                PlaceStructureInCell(clickedCell, selectedStructure);
             }
         }
     }
 
-    void PlaceStructureInCell(GameObject cellObject)
+    void PlaceStructureInCell(GameObject cellObject, Structure structure)
     {
         Cell cell = cellObject.GetComponent<Cell>();
         if (cell != null && cell.placedStructure == null)
         {
-            GameObject newStructureObj = new GameObject(selectedStructure.structureName);
+            GameObject newStructureObj = new GameObject(structure.structureName);
             newStructureObj.transform.position = cell.transform.position + new Vector3(0, 0, -1);
+            newStructureObj.transform.parent = placedStructuresParent;
 
             SpriteRenderer sr = newStructureObj.AddComponent<SpriteRenderer>();
-            sr.sprite = SkinManager.Instance.GetSkinSprite(selectedStructure.skinId);  // Usa skinId
+            sr.sprite = structure.structureSprite;
 
-            cell.placedStructure = selectedStructure;
-            placedStructures[cellObject] = selectedStructure;
+            cell.placedStructure = structure;
+            placedStructures[cellObject] = structure;
 
-            SaveBuildingToSupabase(cell, selectedStructure);
+            SaveBuildingToSupabase(cell, structure);
             selectedStructure = null;
         }
     }
@@ -146,21 +157,100 @@ public class GridManager : MonoBehaviour
         {
             var client = await SupabaseManager.Instance.GetClient();
 
-            var edificio = new Edificio
-            {
-                TipoEdificio = structure.structureName,
-                Vida = structure.health,
-                Dano = structure.damage,
-                IdCiudad = 1,
-                IdSkin = structure.skinId,
-                Cuadrado = cell.cellID
-            };
+            // Verificar si ya existe un edificio en esta celda para esta ciudad
+            var existingResponse = await client
+                .From<Edificio>()
+                .Where(x => x.IdCiudad == ciudadId)
+                .Where(x => x.Cuadrado == cell.cellID)
+                .Get();
 
-            await client.From<Edificio>().Insert(edificio);
+            if (existingResponse.Models.Count > 0)
+            {
+                // Ya existe, así que lo actualizamos
+                var existing = existingResponse.Models[0];
+
+                existing.TipoEdificio = structure.structureName;
+                existing.Vida = structure.health;
+                existing.Dano = structure.damage;
+                existing.IdSkin = structure.skinId;
+
+                await UpdateBuildingInSupabase(existing);
+                Debug.Log($"Edificio actualizado en celda {cell.cellID}");
+            }
+            else
+            {
+                // No existe, así que lo insertamos
+                var edificio = new Edificio
+                {
+                    TipoEdificio = structure.structureName,
+                    Vida = structure.health,
+                    Dano = structure.damage,
+                    IdCiudad = ciudadId,
+                    IdSkin = structure.skinId,
+                    Cuadrado = cell.cellID
+                };
+
+                await client.From<Edificio>().Insert(edificio);
+                Debug.Log($"Edificio insertado en celda {cell.cellID}");
+            }
         }
         catch (Exception ex)
         {
             Debug.LogError($"Error al guardar edificio en Supabase: {ex.Message}");
         }
+    }
+
+    private async Task UpdateBuildingInSupabase(Edificio edificio)
+    {
+        try
+        {
+            var client = await SupabaseManager.Instance.GetClient();
+            await client.From<Edificio>().Update(edificio);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Error al actualizar edificio en Supabase: {ex.Message}");
+        }
+    }
+
+    private async void LoadBuildingsFromSupabase()
+    {
+        try
+        {
+            var client = await SupabaseManager.Instance.GetClient();
+            var response = await client.From<Edificio>().Where(x => x.IdCiudad == ciudadId).Get();
+
+            foreach (var edificio in response.Models)
+            {
+                int row = (int)(edificio.Cuadrado / cols);
+                int col = (int)(edificio.Cuadrado % cols);
+
+                if (row < rows && col < cols)
+                {
+                    Cell cell = gridArray[row, col];
+                    Structure structure = FindStructureByName(edificio.TipoEdificio);
+
+                    if (structure != null)
+                    {
+                        structure = structure.CloneWithSkin(edificio.IdSkin); // Aplica la skin correcta
+                        PlaceStructureInCell(cell.gameObject, structure);
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Error al cargar edificios desde Supabase: {ex.Message}");
+        }
+    }
+
+    private Structure FindStructureByName(string name)
+    {
+        foreach (var s in availableStructures)
+        {
+            if (s.structureName == name)
+                return s;
+        }
+        return null;
     }
 }

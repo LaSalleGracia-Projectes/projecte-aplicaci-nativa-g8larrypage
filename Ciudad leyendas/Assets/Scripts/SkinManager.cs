@@ -8,31 +8,41 @@ public class SkinManager : MonoBehaviour
     [System.Serializable]
     public class SkinEntry
     {
-        public long skinId;
+        public long id;
         public Sprite sprite;
     }
 
-    public SkinEntry[] skins;
-    private Dictionary<long, Sprite> skinDictionary;
+    public List<SkinEntry> skins;
+
+    private Dictionary<long, Sprite> skinDict;
 
     void Awake()
     {
-        if (Instance == null) Instance = this;
-        else Destroy(gameObject);
-
-        skinDictionary = new Dictionary<long, Sprite>();
-        foreach (var skin in skins)
+        if (Instance == null)
         {
-            skinDictionary[skin.skinId] = skin.sprite;
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+            skinDict = new Dictionary<long, Sprite>();
+
+            foreach (var skin in skins)
+            {
+                if (!skinDict.ContainsKey(skin.id))
+                    skinDict.Add(skin.id, skin.sprite);
+            }
+        }
+        else
+        {
+            Destroy(gameObject);
         }
     }
 
-    public Sprite GetSkinSprite(long skinId)
+    public Sprite GetSpriteForSkin(long id)
     {
-        if (skinDictionary.TryGetValue(skinId, out Sprite sprite))
-            return sprite;
-
-        Debug.LogWarning($"No skin found for ID: {skinId}");
+        if (skinDict.ContainsKey(id))
+        {
+            return skinDict[id];
+        }
+        Debug.LogWarning($"Skin ID {id} no encontrada.");
         return null;
     }
 }
