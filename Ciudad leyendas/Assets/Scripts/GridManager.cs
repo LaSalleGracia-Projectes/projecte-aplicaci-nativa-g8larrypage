@@ -1,9 +1,9 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
-using Services;  // Para la conexi�n a Supabase
-using Models;   // Para el modelo Edificio
-using System;   // Para excepciones
+using Services;
+using Models;
+using System;
 
 public class GridManager : MonoBehaviour
 {
@@ -11,23 +11,22 @@ public class GridManager : MonoBehaviour
     public int cols = 10;
     public float cellSize = 1.0f;
     public GameObject cellPrefab;
-    public Structure[] availableStructures; // Lista de estructuras disponibles
-    public Button[] structureButtons; // Array de botones de las estructuras
+    public Structure[] availableStructures;
+    public Button[] structureButtons;
 
     private Vector2 gridOrigin;
-    private Cell[,] gridArray; // Usamos Cell en vez de GameObject
+    private Cell[,] gridArray;
     private Dictionary<GameObject, Structure> placedStructures = new Dictionary<GameObject, Structure>();
-    private Structure selectedStructure = null; // La estructura seleccionada para colocar
+    private Structure selectedStructure = null;
 
     void Start()
     {
         CalculateGridSize();
         GenerateGrid();
 
-        // Asignar eventos a los botones
         for (int i = 0; i < structureButtons.Length; i++)
         {
-            int index = i; // Necesario para evitar problemas con las lambdas
+            int index = i;
             structureButtons[i].onClick.AddListener(() => SelectStructure(index));
         }
     }
@@ -54,7 +53,7 @@ public class GridManager : MonoBehaviour
 
     void GenerateGrid()
     {
-        gridArray = new Cell[rows, cols]; // Cambiado a Cell
+        gridArray = new Cell[rows, cols];
 
         for (int row = 0; row < rows; row++)
         {
@@ -66,12 +65,8 @@ public class GridManager : MonoBehaviour
                 );
 
                 GameObject cellObject = CreateCell(cellPosition);
-                Cell cell = cellObject.GetComponent<Cell>(); // Obtener el componente Cell
-
-                // Asigna el ID de celda �nico
+                Cell cell = cellObject.GetComponent<Cell>();
                 cell.cellID = row * cols + col;
-
-                // Agrega la celda al array
                 gridArray[row, col] = cell;
             }
         }
@@ -79,24 +74,20 @@ public class GridManager : MonoBehaviour
 
     GameObject CreateCell(Vector2 position)
     {
-        GameObject cell;
+        GameObject cell = cellPrefab != null ?
+            Instantiate(cellPrefab, position, Quaternion.identity, transform) :
+            new GameObject("Cell");
 
-        if (cellPrefab != null)
+        if (cellPrefab == null)
         {
-            cell = Instantiate(cellPrefab, position, Quaternion.identity, transform);
-        }
-        else
-        {
-            cell = new GameObject("Cell");
             cell.transform.position = position;
             cell.transform.parent = transform;
-
             SpriteRenderer sr = cell.AddComponent<SpriteRenderer>();
             sr.color = new Color(1, 1, 1, 0.2f);
         }
 
         cell.AddComponent<BoxCollider2D>();
-        cell.AddComponent<Cell>(); // Aseg�rate de agregar el componente Cell a cada celda
+        cell.AddComponent<Cell>();
         return cell;
     }
 
@@ -118,23 +109,20 @@ public class GridManager : MonoBehaviour
 
     void PlaceStructureInCell(GameObject cellObject)
     {
-        Cell cell = cellObject.GetComponent<Cell>();  // Obtener el componente Cell
-        if (cell != null && cell.placedStructure == null) // Si no tiene estructura, colocamos una nueva
+        Cell cell = cellObject.GetComponent<Cell>();
+        if (cell != null && cell.placedStructure == null)
         {
             GameObject newStructureObj = new GameObject(selectedStructure.structureName);
             newStructureObj.transform.position = cell.transform.position + new Vector3(0, 0, -1);
 
             SpriteRenderer sr = newStructureObj.AddComponent<SpriteRenderer>();
-            sr.sprite = selectedStructure.structureSprite;
+            sr.sprite = SkinManager.Instance.GetSkinSprite(selectedStructure.skinId);  // Usa skinId
 
-            cell.placedStructure = selectedStructure;  // Asigna la estructura a la celda
-
+            cell.placedStructure = selectedStructure;
             placedStructures[cellObject] = selectedStructure;
 
-            // Guardar la estructura en Supabase
             SaveBuildingToSupabase(cell, selectedStructure);
-
-            selectedStructure = null; // Vuelve a deseleccionar la estructura
+            selectedStructure = null;
         }
     }
 
@@ -144,7 +132,6 @@ public class GridManager : MonoBehaviour
         {
             selectedStructure = availableStructures[index];
 
-            // Cerrar el PopupPanel al seleccionar una estructura
             PopupManager popupManager = FindObjectOfType<PopupManager>();
             if (popupManager != null)
             {
@@ -153,33 +140,27 @@ public class GridManager : MonoBehaviour
         }
     }
 
-    // Funci�n para guardar el edificio en Supabase
     private async void SaveBuildingToSupabase(Cell cell, Structure structure)
     {
         try
         {
             var client = await SupabaseManager.Instance.GetClient();
 
-            // Crear el objeto del edificio para insertar
             var edificio = new Edificio
             {
                 TipoEdificio = structure.structureName,
                 Vida = structure.health,
                 Dano = structure.damage,
-                IdCiudad = 1, // Asigna el ID de ciudad correspondiente
-                IdSkin = 1, // Asigna el ID de skin correspondiente
+                IdCiudad = 1,
+                IdSkin = structure.skinId,
                 Cuadrado = cell.cellID
             };
 
-            // Insertar el edificio en la base de datos
-            var insertResponse = await client.From<Edificio>().Insert(edificio);
-
+            await client.From<Edificio>().Insert(edificio);
         }
         catch (Exception ex)
         {
             Debug.LogError($"Error al guardar edificio en Supabase: {ex.Message}");
         }
     }
-
-
 }

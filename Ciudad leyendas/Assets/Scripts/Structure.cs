@@ -4,15 +4,15 @@ using UnityEngine;
 public class Structure
 {
     public string structureName;
-    public Sprite structureSprite;
+    public int skinId;  // ID de skin en vez del sprite
     public int health;
     public int damage;
     public int price;
 
-    public Structure(string name, Sprite sprite, int health, int damage, int price)
+    public Structure(string name, int skinId, int health, int damage, int price)
     {
         structureName = name;
-        structureSprite = sprite;
+        this.skinId = skinId;
         this.health = health;
         this.damage = damage;
         this.price = price;
