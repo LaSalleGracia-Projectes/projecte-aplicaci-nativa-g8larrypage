@@ -126,8 +126,13 @@ public class GridManager : MonoBehaviour
             newStructureObj.transform.position = cell.transform.position + new Vector3(0, 0, -1);
             newStructureObj.transform.parent = placedStructuresParent;
 
-            SpriteRenderer sr = newStructureObj.AddComponent<SpriteRenderer>();
-            sr.sprite = structure.structureSprite;
+            // Usamos la skin desde SkinManager
+            Sprite structureSprite = SkinManager.Instance.GetSpriteForSkin(structure.skinId);
+            if (structureSprite != null)
+            {
+                SpriteRenderer sr = newStructureObj.AddComponent<SpriteRenderer>();
+                sr.sprite = structureSprite;
+            }
 
             cell.placedStructure = structure;
             placedStructures[cellObject] = structure;

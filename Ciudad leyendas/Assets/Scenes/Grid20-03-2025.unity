@@ -1445,8 +1445,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   skins:
-  - skinId: 1
+  - id: 1
     sprite: {fileID: -6809907661698028246, guid: f7777f05c4e5b404189f9d89029b69e4, type: 3}
+  - id: 2
+    sprite: {fileID: -3630859286664456363, guid: 1e140f62f8339ad44b5074512edbcf69, type: 3}
+  - id: 4
+    sprite: {fileID: -7682583394713823069, guid: ca08c207d378ed14e9ee3aaa72f7a072, type: 3}
 --- !u!4 &1091486305
 Transform:
   m_ObjectHideFlags: 0
@@ -2357,6 +2361,10 @@ PrefabInstance:
       value: 300
       objectReference: {fileID: 0}
     - target: {fileID: 1022748720637702338, guid: 16e826b219238e245878eb67fe93ed37, type: 3}
+      propertyPath: availableStructures.Array.data[0].skinId
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 1022748720637702338, guid: 16e826b219238e245878eb67fe93ed37, type: 3}
       propertyPath: availableStructures.Array.data[1].damage
       value: 100
       objectReference: {fileID: 0}
@@ -2755,7 +2763,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2128913979
 RectTransform:
   m_ObjectHideFlags: 0
