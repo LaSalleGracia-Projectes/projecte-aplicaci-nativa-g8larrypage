@@ -97,6 +97,13 @@ public class GridManager : MonoBehaviour
             sr.color = new Color(1, 1, 1, 0.2f);
         }
 
+        // Restar 10 al sortingOrder para colocar el grid y fondo detrás
+        SpriteRenderer cellSR = cell.GetComponent<SpriteRenderer>();
+        if (cellSR != null)
+        {
+            cellSR.sortingOrder -= 10; // Ajusta el valor según sea necesario
+        }
+
         cell.AddComponent<BoxCollider2D>();
         cell.AddComponent<Cell>();
         return cell;
@@ -110,9 +117,16 @@ public class GridManager : MonoBehaviour
         if (hit.collider != null)
         {
             GameObject clickedCell = hit.collider.gameObject;
-            if (selectedStructure != null)
+            Cell cell = clickedCell.GetComponent<Cell>();
+
+            if (cell != null && cell.placedStructure != null)
             {
-                PlaceStructureInCell(clickedCell, selectedStructure);
+                BuildingInfoPopup popup = FindObjectOfType<BuildingInfoPopup>();
+                if (popup != null)
+                {
+                    // Mostrar la información del edificio
+                    popup.OnPointerDown(cell.placedStructure);
+                }
             }
         }
     }
@@ -132,11 +146,25 @@ public class GridManager : MonoBehaviour
             {
                 SpriteRenderer sr = newStructureObj.AddComponent<SpriteRenderer>();
                 sr.sprite = structureSprite;
+
+                // Agregar BoxCollider2D adaptado al sprite
+                BoxCollider2D collider = newStructureObj.AddComponent<BoxCollider2D>();
+                collider.isTrigger = true;
+                collider.size = sr.sprite.bounds.size;
+
+                // Restar 10 al sortingOrder para las estructuras
+                sr.sortingOrder -= 10;
             }
 
+            // Agregar el detector de mantener pulsado
+            StructureHoldDetector detector = newStructureObj.AddComponent<StructureHoldDetector>();
+            detector.structure = structure;
+
+            // Registrar la estructura en la celda
             cell.placedStructure = structure;
             placedStructures[cellObject] = structure;
 
+            // Guardar en Supabase
             SaveBuildingToSupabase(cell, structure);
             selectedStructure = null;
         }
