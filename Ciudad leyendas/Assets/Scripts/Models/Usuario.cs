@@ -4,6 +4,7 @@ using Supabase.Postgrest.Models;
 
 namespace Models
 {
+    [Table("Usuario")]
     public class Usuario : BaseModel
     {
         [PrimaryKey("id")]
