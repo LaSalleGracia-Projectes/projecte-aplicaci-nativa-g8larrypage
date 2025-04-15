@@ -15,10 +15,5 @@ namespace Models
         
         [Column("id_leader")]
         public Guid IdLeader { get; set; }
-        
-        [Column("experiencia_total")]
-        public int ExperienciaTotal { get; set; }
-        
-        
     }
 }
