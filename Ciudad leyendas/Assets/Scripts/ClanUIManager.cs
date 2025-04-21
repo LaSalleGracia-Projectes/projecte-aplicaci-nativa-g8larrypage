@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class ClanUIManager : MonoBehaviour
@@ -12,5 +13,17 @@ public class ClanUIManager : MonoBehaviour
     void Update()
     {
         
+    }
+    
+    public void OpenCreateClanMenu() 
+    {
+        // Open the create clan menu
+        Debug.Log("Open Create Clan Menu");
+    }
+    
+    public void CreateClan()
+    {
+        // Create a clan
+        Debug.Log("Create Clan");
     }
 }
