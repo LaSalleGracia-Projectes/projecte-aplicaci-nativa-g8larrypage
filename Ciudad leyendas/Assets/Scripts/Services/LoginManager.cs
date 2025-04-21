@@ -16,6 +16,7 @@ namespace Services
         private const string SessionKey = "supabase_session";
         private const string UserIdKey = "user_id";
         private const string EmailKey = "user_email";
+        private const string JugadorIdKey = "jugador_id";
 
         public async Task<bool> LogIn(string email, string password, TMP_Text infoText)
         {
@@ -116,6 +117,7 @@ namespace Services
             PlayerPrefs.DeleteKey(UserIdKey);
             PlayerPrefs.DeleteKey(EmailKey);
             PlayerPrefs.DeleteKey(SessionKey);
+            PlayerPrefs.DeleteKey(JugadorIdKey);
             PlayerPrefs.Save();
             Debug.Log("Sesión borrada");
         }
@@ -175,6 +177,7 @@ namespace Services
                     var response3 = await supabase.From<Ciudad>().Insert(ciudad);
 
                     Debug.Log($"Jugador creado: {response2.Models[0].Nombre} con {pasosTotales} pasos");
+                    PlayerPrefs.SetInt(JugadorIdKey, response2.Models[0].IdJugador);
                     Debug.Log("Ciudad creada: " + response3.Models[0].IdCiudad);
                 }
                 else
@@ -265,7 +268,7 @@ namespace Services
 
         public void GoToGame()
         {
-            SceneManager.LoadScene("CollectStepsTest");
+            SceneManager.LoadScene("ClanPrototipo");
         }
     }
 }

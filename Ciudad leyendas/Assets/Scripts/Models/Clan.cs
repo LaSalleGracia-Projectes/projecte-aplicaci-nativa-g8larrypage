@@ -14,7 +14,7 @@ namespace Models
         public string Nombre { get; set; }
         
         [Column("id_leader")]
-        public Guid IdLeader { get; set; }
+        public long IdLeader { get; set; }
         
         [Column("clan_code")]
         public string ClanCode { get; set; }

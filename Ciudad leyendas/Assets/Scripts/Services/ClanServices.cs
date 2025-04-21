@@ -16,10 +16,13 @@ namespace Services
             try
             {
                 var supabase = await _supabaseManager.GetClient();
+                
+                string code = GenerateRandomClanCode();
                 var clan = new Clan
                 {
                     Nombre = clanName,
-                    IdLeader = leaderId,
+                    IdLeader = PlayerPrefs.GetInt("jugador_id"),
+                    ClanCode = code
                 };
 
                 var response = await supabase.From<Clan>().Insert(clan);
@@ -39,7 +42,17 @@ namespace Services
                 return false;
             }
         }
-        
+
+        private string GenerateRandomClanCode()
+        {
+            var random = new System.Random();
+            string part1 = random.Next(100, 1000).ToString();
+            string part2 = random.Next(100, 1000).ToString();
+            string part3 = random.Next(100, 1000).ToString();
+    
+            return $"{part1}-{part2}-{part3}";
+        }
+
         public async Task<int> JoinClan(int clanId)
         {
             try

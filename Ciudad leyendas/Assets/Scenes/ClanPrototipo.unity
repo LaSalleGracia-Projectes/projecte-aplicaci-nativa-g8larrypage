@@ -526,6 +526,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 00c10915564e0ed4b8936985ac50414d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  clanNameCreate: {fileID: 687341747}
 --- !u!1 &634085319
 GameObject:
   m_ObjectHideFlags: 0
@@ -1219,7 +1220,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1000341280}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 587854503}
+        m_TargetAssemblyTypeName: ClanUIManager, Assembly-CSharp
+        m_MethodName: CreateClan
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1000341280
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2095,10 +2108,10 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 14
+  m_fontSize: 72
   m_fontSizeBase: 14
   m_fontWeight: 400
-  m_enableAutoSizing: 0
+  m_enableAutoSizing: 1
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
