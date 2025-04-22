@@ -11,7 +11,7 @@ namespace Services
     {
         private readonly SupabaseManager _supabaseManager = SupabaseManager.Instance;
         
-        public async Task<bool> CreateClan(string clanName, Guid leaderId)
+        public async Task<bool> CreateClan(string clanName)
         {
             try
             {

@@ -8,25 +8,37 @@ using UnityEngine.UIElements;
 public class ClanUIManager : MonoBehaviour
 {
     public TMP_InputField clanNameCreate;
+    public GameObject createClanMenu;
+    public Button btnOpenCreateClanMenu;
     
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        createClanMenu.SetActive(false);
+        btnOpenCreateClanMenu.SetEnabled(true);
     }
     
+    /// <summary>
+    /// Handles click of the open clan menu "CREATE"
+    /// </summary>
     public void OpenCreateClanMenu() 
     {
-        // Open the create clan menu
-        Debug.Log("Open Create Clan Menu");
+        createClanMenu.SetActive(true);
+        btnOpenCreateClanMenu.SetEnabled(false);
     }
     
+    /// <summary>
+    /// Handles click of cancel button
+    /// </summary>
+    public void CloseCreateClanMenu()
+    {
+        createClanMenu.SetActive(false);
+        btnOpenCreateClanMenu.SetEnabled(true);
+    }
+   
+    /// <summary>
+    /// Handles click of create clan button
+    /// </summary>
     public void CreateClan()
     {
         if (clanNameCreate.text.Length < 3)
@@ -36,10 +48,8 @@ public class ClanUIManager : MonoBehaviour
         else
         {
             // Call the ClanServices to create a clan
-            Guid leaderId = Guid.Parse(PlayerPrefs.GetString("user_id"));
-            
             ClanServices clanServices = new ClanServices();
-            clanServices.CreateClan(clanNameCreate.text, leaderId).ContinueWith(task =>
+            clanServices.CreateClan(clanNameCreate.text).ContinueWith(task =>
             {
                 if (task.Result)
                 {
