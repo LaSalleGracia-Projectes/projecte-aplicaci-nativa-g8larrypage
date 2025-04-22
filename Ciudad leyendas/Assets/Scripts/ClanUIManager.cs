@@ -1,41 +1,41 @@
-using System;
 using Services;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.UIElements;
+using UnityEngine.UI;
 
 public class ClanUIManager : MonoBehaviour
 {
     public TMP_InputField clanNameCreate;
-    public GameObject createClanMenu;
+
+    [Header("Clan Menu Stuff")] public GameObject createClanMenu;
     public Button btnOpenCreateClanMenu;
-    
+    public TMP_Text textInfoClanMenu;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         createClanMenu.SetActive(false);
-        btnOpenCreateClanMenu.SetEnabled(true);
+        btnOpenCreateClanMenu.interactable = true;
     }
-    
+
     /// <summary>
     /// Handles click of the open clan menu "CREATE"
     /// </summary>
-    public void OpenCreateClanMenu() 
+    public void OpenCreateClanMenu()
     {
         createClanMenu.SetActive(true);
-        btnOpenCreateClanMenu.SetEnabled(false);
+        btnOpenCreateClanMenu.interactable = false;
     }
-    
+
     /// <summary>
     /// Handles click of cancel button
     /// </summary>
     public void CloseCreateClanMenu()
     {
         createClanMenu.SetActive(false);
-        btnOpenCreateClanMenu.SetEnabled(true);
+        btnOpenCreateClanMenu.interactable = true;
     }
-   
+
     /// <summary>
     /// Handles click of create clan button
     /// </summary>
@@ -43,7 +43,8 @@ public class ClanUIManager : MonoBehaviour
     {
         if (clanNameCreate.text.Length < 3)
         {
-            Debug.Log("Clan name must be at least 3 characters long.");
+            textInfoClanMenu.text = "Clan name must be at least 3 characters long.";
+            textInfoClanMenu.color = Color.red;
         }
         else
         {
@@ -53,15 +54,16 @@ public class ClanUIManager : MonoBehaviour
             {
                 if (task.Result)
                 {
-                    Debug.Log("Clan created successfully!");
+                    textInfoClanMenu.text = "Clan created successfully!";
+                    textInfoClanMenu.color = Color.green;
                 }
                 else
                 {
-                    Debug.Log("Failed to create clan.");
+                    textInfoClanMenu.text = "Something went wrong! Try again.";
+                    textInfoClanMenu.color = Color.red;
                 }
             });
             Debug.Log("Clan created with name: " + clanNameCreate.text);
         }
-        
     }
 }
