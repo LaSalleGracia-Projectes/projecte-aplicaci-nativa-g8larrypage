@@ -59,11 +59,10 @@ public class ClanUIManager : MonoBehaviour
                 }
                 else
                 {
-                    textInfoClanMenu.text = "Something went wrong! Try again.";
+                    textInfoClanMenu.text = "Something went wrong! Try again. Make sure you are not already in a clan.";
                     textInfoClanMenu.color = Color.red;
                 }
             });
-            Debug.Log("Clan created with name: " + clanNameCreate.text);
         }
     }
 }

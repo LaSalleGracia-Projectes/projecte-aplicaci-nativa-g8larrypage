@@ -178,6 +178,8 @@ namespace Services
 
                     Debug.Log($"Jugador creado: {response2.Models[0].Nombre} con {pasosTotales} pasos");
                     PlayerPrefs.SetInt(JugadorIdKey, response2.Models[0].IdJugador);
+                    PlayerPrefs.Save();
+                    Debug.Log("Jugador ID guardado: " + PlayerPrefs.GetInt(JugadorIdKey));
                     Debug.Log("Ciudad creada: " + response3.Models[0].IdCiudad);
                 }
                 else
