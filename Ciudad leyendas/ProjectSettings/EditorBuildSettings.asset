@@ -11,12 +11,15 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/LogInRegister.unity
     guid: a1db5c45e2375b147a4b6942eaca7a7b
-  - enabled: 0
+  - enabled: 1
     path: Assets/Scenes/GridTest.unity
     guid: 30d467c16d4ce514495d13df8c7dede0
   - enabled: 1
     path: Assets/Scenes/CollectStepsTest.unity
     guid: 1ead626ea940cb648846c1c617a9b7eb
+  - enabled: 1
+    path: Assets/Scenes/ClanPrototipo.unity
+    guid: fbfdb26349ffc034aabde2cb20fa1545
   m_configObjects:
     com.unity.adaptiveperformance.google.android.provider_settings: {fileID: 11400000, guid: 5f04f2a01897f114784d829a7d9f4616, type: 2}
     com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: 6e8832c6565facc44ba8984d0bddf6ac, type: 2}

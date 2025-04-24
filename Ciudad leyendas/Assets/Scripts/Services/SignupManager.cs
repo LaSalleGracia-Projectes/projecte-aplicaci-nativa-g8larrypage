@@ -11,13 +11,12 @@ namespace Services
     {
         private readonly SupabaseManager _supabaseManager = SupabaseManager.Instance;
     
-        public async Task<bool> SignUp(string email, string emailConfirm, 
+        public async Task SignUp(string email, string emailConfirm,
             string password, string passwordConfirm, TMP_Text infoText)
         {
             bool isValid = await VerifyInputFields(email, emailConfirm, password, passwordConfirm, infoText);
-            if (!isValid)
-                return false;
-            
+            if (!isValid) return;
+
             // If all checks pass, sign up
             Debug.Log("All checks passed!");
             try
@@ -32,9 +31,11 @@ namespace Services
                         infoText.text = "SignUp successful!";
                         infoText.color = Color.green;
                     }
-                    return true;
+                    
+                    Debug.Log("user " + session.User.Id);
                 }
-                return false;
+                
+                
             }
             catch (Exception e)
             {
@@ -44,7 +45,8 @@ namespace Services
                     infoText.text = "SignUp failed!";
                     infoText.color = Color.red;
                 }
-                return false;
+
+                return;
             }
         }
     
