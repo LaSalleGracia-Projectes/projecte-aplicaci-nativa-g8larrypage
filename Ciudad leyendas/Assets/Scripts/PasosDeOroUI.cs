@@ -9,8 +9,9 @@ using static Supabase.Postgrest.Constants;
 public class PasosDeOroUI : MonoBehaviour
 {
     public TextMeshProUGUI pasosText;
-    public int ciudadId = 2; // ID de la ciudad actual
     public float updateInterval = 5f;
+
+    private const string JugadorIdKey = "jugador_id";
 
     private async void Start()
     {
@@ -33,41 +34,34 @@ public class PasosDeOroUI : MonoBehaviour
     {
         try
         {
-            var client = await SupabaseManager.Instance.GetClient();
+            // Obtener el id_jugador como int desde PlayerPrefs
+            int storedJugadorId = PlayerPrefs.GetInt(JugadorIdKey, -1);  // -1 es el valor por defecto si no se encuentra
 
-            // Obtener la ciudad correspondiente
-            var ciudadResponse = await client
-                .From<Ciudad>()
-                .Select("*")
-                .Filter("id_ciudad", Operator.Equals, ciudadId)
-                .Get();
-
-            if (ciudadResponse.Models.Count == 0)
+            if (storedJugadorId == -1)
             {
-                Debug.LogWarning($"No se encontró la ciudad con id: {ciudadId}");
+                Debug.LogWarning("No se encontró el jugador_id en PlayerPrefs.");
                 pasosText.text = "0";
                 return;
             }
 
-            var ciudad = ciudadResponse.Models[0];
-            int idJugador = ciudad.IdJugador;
+            var client = await SupabaseManager.Instance.GetClient();
 
-            // Obtener el jugador dueño de la ciudad
+            // Obtener el jugador con ese id_jugador
             var jugadorResponse = await client
                 .From<Jugador>()
                 .Select("pasos_totales")
-                .Filter("id_jugador", Operator.Equals, idJugador)
+                .Filter("id_jugador", Operator.Equals, storedJugadorId)
                 .Get();
 
             if (jugadorResponse.Models.Count > 0)
             {
                 var jugador = jugadorResponse.Models[0];
                 pasosText.text = jugador.PasosTotales.ToString("N0");
-                Debug.Log($"Pasos totales del jugador {idJugador}: {jugador.PasosTotales}");
+                Debug.Log($"Pasos totales del jugador {storedJugadorId}: {jugador.PasosTotales}");
             }
             else
             {
-                Debug.LogWarning($"No se encontró al jugador con id: {idJugador}");
+                Debug.LogWarning($"No se encontró al jugador con id_jugador: {storedJugadorId}");
                 pasosText.text = "0";
             }
         }

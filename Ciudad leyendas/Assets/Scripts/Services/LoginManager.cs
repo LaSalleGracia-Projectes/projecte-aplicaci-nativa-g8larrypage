@@ -270,7 +270,7 @@ namespace Services
 
         public void GoToGame()
         {
-            SceneManager.LoadScene("ClanPrototipo");
+            SceneManager.LoadScene("Grid20-03-2025");
         }
     }
 }

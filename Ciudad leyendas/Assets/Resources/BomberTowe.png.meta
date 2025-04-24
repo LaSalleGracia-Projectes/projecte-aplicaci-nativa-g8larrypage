@@ -147,7 +147,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      BomberTowe_0: 1795036784240312597
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
