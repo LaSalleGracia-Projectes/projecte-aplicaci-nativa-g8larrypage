@@ -526,8 +526,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 00c10915564e0ed4b8936985ac50414d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  clanNameCreate: {fileID: 687341747}
+  ClanCodeInputField: {fileID: 1009304322}
+  searchResultText: {fileID: 1969785664}
   createClanMenu: {fileID: 2003239441}
+  clanNameCreate: {fileID: 687341747}
   btnOpenCreateClanMenu: {fileID: 1836791725}
   textInfoClanMenu: {fileID: 1247207735}
 --- !u!1 &634085319
@@ -1361,14 +1363,14 @@ MonoBehaviour:
   m_VerticalScrollbarEventHandler: {fileID: 0}
   m_LayoutGroup: {fileID: 0}
   m_ScrollSensitivity: 1
-  m_ContentType: 2
+  m_ContentType: 0
   m_InputType: 0
   m_AsteriskChar: 42
-  m_KeyboardType: 4
+  m_KeyboardType: 0
   m_LineType: 0
   m_HideMobileInput: 0
   m_HideSoftKeyboard: 0
-  m_CharacterValidation: 2
+  m_CharacterValidation: 0
   m_RegexValue: 
   m_GlobalPointSize: 14
   m_CharacterLimit: 0
@@ -1467,7 +1469,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1033412242
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2815,7 +2817,7 @@ GameObject:
   - component: {fileID: 1969785665}
   - component: {fileID: 1969785664}
   m_Layer: 5
-  m_Name: Text (TMP)
+  m_Name: ExtraInfoText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3091,7 +3093,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2003239442
 RectTransform:
   m_ObjectHideFlags: 0
