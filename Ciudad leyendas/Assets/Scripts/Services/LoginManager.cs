@@ -35,6 +35,7 @@ namespace Services
                     }
 
                     SaveSession(response);
+                    await CheckPlayerExists(response.User.Id);
                     await SyncTemporalStepsWithPlayer(response.User.Id);
                     return true;
                 }
