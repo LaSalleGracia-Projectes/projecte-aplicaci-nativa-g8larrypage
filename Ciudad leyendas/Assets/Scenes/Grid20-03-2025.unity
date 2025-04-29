@@ -1452,6 +1452,30 @@ MonoBehaviour:
     sprite: {fileID: -3630859286664456363, guid: 1e140f62f8339ad44b5074512edbcf69, type: 3}
   - id: 4
     sprite: {fileID: -7682583394713823069, guid: ca08c207d378ed14e9ee3aaa72f7a072, type: 3}
+  - id: 3
+    sprite: {fileID: 4483848886419278014, guid: ab6d6d3d367dddb4b8411726dec5e9ee, type: 3}
+  - id: 5
+    sprite: {fileID: -1410105078872471023, guid: aecac8c654e0fbb4b839b659fd0e3862, type: 3}
+  - id: 6
+    sprite: {fileID: -5934058405265856068, guid: c75ece17703438a4fbc6c421e57e67c1, type: 3}
+  - id: 7
+    sprite: {fileID: 7184788383436299387, guid: a86ad7f6a03f93440be9a2cf5febb135, type: 3}
+  - id: 8
+    sprite: {fileID: -6350830919589728421, guid: 4f71f725f682aeb4881631a017b136fc, type: 3}
+  - id: 9
+    sprite: {fileID: 9216750747941775586, guid: 7775b51317c980a4dac1c25a94a91794, type: 3}
+  - id: 10
+    sprite: {fileID: -6651883284048123683, guid: 5289726401bc75748ae06e8b36fe4c9b, type: 3}
+  - id: 11
+    sprite: {fileID: 8805441340112000422, guid: 90d8b88b31f67084398127ccb9d00a22, type: 3}
+  - id: 12
+    sprite: {fileID: 3517150418565957134, guid: 725f76a5e9fb6ff46983151a1ea95b77, type: 3}
+  - id: 13
+    sprite: {fileID: -3609679208278219701, guid: 8793c5811d926944bbbd93b3b687d0ab, type: 3}
+  - id: 14
+    sprite: {fileID: -2526496427015031066, guid: df10a868dce256f44b1ece1456ce213e, type: 3}
+  - id: 15
+    sprite: {fileID: 6096027079745923878, guid: 787c0472d102b4443bacc3bdff4916eb, type: 3}
 --- !u!4 &1091486305
 Transform:
   m_ObjectHideFlags: 0
@@ -2589,7 +2613,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1022748720637702338, guid: 16e826b219238e245878eb67fe93ed37, type: 3}
       propertyPath: availableStructures.Array.data[1].structureName
-      value: Torre
+      value: Tesla
       objectReference: {fileID: 0}
     - target: {fileID: 1022748720637702338, guid: 16e826b219238e245878eb67fe93ed37, type: 3}
       propertyPath: availableStructures.Array.data[2].structureName
@@ -2610,7 +2634,7 @@ PrefabInstance:
     - target: {fileID: 1022748720637702338, guid: 16e826b219238e245878eb67fe93ed37, type: 3}
       propertyPath: availableStructures.Array.data[1].structureSprite
       value: 
-      objectReference: {fileID: -6210993445114992779, guid: ecf9df0894618ad43bd5bdde9cc9d344, type: 3}
+      objectReference: {fileID: -3609679208278219701, guid: 8793c5811d926944bbbd93b3b687d0ab, type: 3}
     - target: {fileID: 1022748720637702338, guid: 16e826b219238e245878eb67fe93ed37, type: 3}
       propertyPath: availableStructures.Array.data[2].structureSprite
       value: 
@@ -2622,7 +2646,7 @@ PrefabInstance:
     - target: {fileID: 1022748720637702338, guid: 16e826b219238e245878eb67fe93ed37, type: 3}
       propertyPath: availableStructures.Array.data[4].structureSprite
       value: 
-      objectReference: {fileID: 1795036784240312597, guid: 31d3c252d3a18f44a8d125bafceb0511, type: 3}
+      objectReference: {fileID: -6651883284048123683, guid: 5289726401bc75748ae06e8b36fe4c9b, type: 3}
     - target: {fileID: 1557189747764462002, guid: 16e826b219238e245878eb67fe93ed37, type: 3}
       propertyPath: m_LocalPosition.x
       value: -3.6704712
