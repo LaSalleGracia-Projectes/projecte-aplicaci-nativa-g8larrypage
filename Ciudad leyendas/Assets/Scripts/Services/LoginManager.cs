@@ -35,6 +35,7 @@ namespace Services
                     }
 
                     SaveSession(response);
+                    await CheckPlayerExists(response.User.Id);
                     await SyncTemporalStepsWithPlayer(response.User.Id);
                     return true;
                 }
@@ -148,7 +149,7 @@ namespace Services
             try
             {
                 var supabase = await _supabaseManager.GetClient();
-                var response = await supabase.From<Jugador>().Select("nombre, pasos_totales")
+                var response = await supabase.From<Jugador>().Select("nombre, pasos_totales, id_jugador")
                     .Filter("id_usuario", Constants.Operator.Equals, userId).Get();
 
                 if (response.Models.Count == 0)
@@ -185,6 +186,10 @@ namespace Services
                 else
                 {
                     Debug.Log("El jugador existe: " + response.Models[0].Nombre);
+                    Debug.Log("ID Jugador: " + response.Models[0].IdJugador);
+                    PlayerPrefs.SetInt(JugadorIdKey, response.Models[0].IdJugador);
+                    PlayerPrefs.Save();
+                    Debug.Log("Jugador ID guardado: " + PlayerPrefs.GetInt(JugadorIdKey));
                 }
             }
             catch (Exception e)

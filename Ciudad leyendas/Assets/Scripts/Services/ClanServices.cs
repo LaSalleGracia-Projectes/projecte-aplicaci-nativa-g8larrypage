@@ -177,5 +177,41 @@ namespace Services
                 return null;
             }
         }
+
+        public async Task<Clan> GetClanByInfo(string clanInfo)
+        {
+            try
+            {
+                var supabase = await _supabaseManager.GetClient();
+                var response = await supabase.From<Clan>()
+                    .Filter("clan_code", Constants.Operator.Equals, clanInfo)
+                    .Get();
+
+                if (response.Models.Count > 0)
+                {
+                    Debug.Log("Clan retrieved successfully!");
+                    return response.Models[0];
+                }
+                
+                // If not found by clan code, try by clan name
+                response = await supabase.From<Clan>()
+                    .Filter("nombre", Constants.Operator.Equals, clanInfo)
+                    .Get();
+
+                if (response.Models.Count > 0)
+                {
+                    Debug.Log("Clan retrieved successfully!");
+                    return response.Models[0];
+                }
+
+                Debug.LogError("Failed to retrieve clan: " + response);
+                return null;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("Error con supabase: " + e);
+                throw;
+            }
+        }
     }
 }
