@@ -17,7 +17,7 @@ public class GridManager : MonoBehaviour
     public Button[] structureButtons;
     public Transform placedStructuresParent;
 
-    public long ciudadId = 2; // ID de ciudad a cargar. Puedes cambiarlo dinámicamente según el jugador.
+    public long ciudadId = 112; // ID de ciudad a cargar. Puedes cambiarlo dinámicamente según el jugador.
 
     private Vector2 gridOrigin;
     private Cell[,] gridArray;
