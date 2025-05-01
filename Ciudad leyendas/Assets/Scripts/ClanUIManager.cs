@@ -16,6 +16,17 @@ public class ClanUIManager : MonoBehaviour
     public TMP_InputField clanNameCreate;
     public Button btnOpenCreateClanMenu;
     public TMP_Text textInfoClanMenu;
+    
+    [Header("Clan Details UI")]
+    public GameObject clanDetailsMenu;
+    public Button btnCloseClanDetailsMenu;
+    public TMP_Text clanNameText;
+    public TMP_Text clanCode;
+    public Button copyClanCodeButton;
+    public Button joinLeaveClanButton;
+    public TMP_Text clanDetailsText;
+    public GameObject clanPlayers;
+    
 
     private ClanServices clanServices;
     private Coroutine searchCoroutine;
