@@ -147,7 +147,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      TeslaSkin2_0: -2526496427015031066
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
