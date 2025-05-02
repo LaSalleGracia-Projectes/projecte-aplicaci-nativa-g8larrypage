@@ -149,7 +149,7 @@ namespace Services
             try
             {
                 var supabase = await _supabaseManager.GetClient();
-                var response = await supabase.From<Jugador>().Select("nombre, pasos_totales, id_jugador, id_clan, ")
+                var response = await supabase.From<Jugador>().Select("nombre, pasos_totales, id_jugador, id_clan")
                     .Filter("id_usuario", Constants.Operator.Equals, userId).Get();
 
                 if (response.Models.Count == 0)

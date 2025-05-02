@@ -213,5 +213,30 @@ namespace Services
                 throw;
             }
         }
+
+        public async Task<List<Jugador>> GetClanPlayers(int clanIdClan)
+        {
+            try
+            {
+                var supabase = await _supabaseManager.GetClient();
+                var response = await supabase.From<Jugador>()
+                    .Filter("id_clan", Constants.Operator.Equals, clanIdClan)
+                    .Get();
+
+                if (response.Models.Count > 0)
+                {
+                    Debug.Log("Clan players retrieved successfully!");
+                    return response.Models;
+                }
+
+                Debug.LogError("Failed to retrieve clan players: " + response);
+                return null;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("Error retrieving clan players: " + e.Message);
+                return null;
+            }
+        }
     }
 }
