@@ -2580,12 +2580,20 @@ PrefabInstance:
       value: 200
       objectReference: {fileID: 0}
     - target: {fileID: 1022748720637702338, guid: 16e826b219238e245878eb67fe93ed37, type: 3}
+      propertyPath: availableStructures.Array.data[1].skinId
+      value: 13
+      objectReference: {fileID: 0}
+    - target: {fileID: 1022748720637702338, guid: 16e826b219238e245878eb67fe93ed37, type: 3}
       propertyPath: availableStructures.Array.data[2].damage
       value: 60
       objectReference: {fileID: 0}
     - target: {fileID: 1022748720637702338, guid: 16e826b219238e245878eb67fe93ed37, type: 3}
       propertyPath: availableStructures.Array.data[2].health
       value: 150
+      objectReference: {fileID: 0}
+    - target: {fileID: 1022748720637702338, guid: 16e826b219238e245878eb67fe93ed37, type: 3}
+      propertyPath: availableStructures.Array.data[2].skinId
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 1022748720637702338, guid: 16e826b219238e245878eb67fe93ed37, type: 3}
       propertyPath: availableStructures.Array.data[3].damage
@@ -2606,6 +2614,10 @@ PrefabInstance:
     - target: {fileID: 1022748720637702338, guid: 16e826b219238e245878eb67fe93ed37, type: 3}
       propertyPath: availableStructures.Array.data[4].health
       value: 120
+      objectReference: {fileID: 0}
+    - target: {fileID: 1022748720637702338, guid: 16e826b219238e245878eb67fe93ed37, type: 3}
+      propertyPath: availableStructures.Array.data[4].skinId
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 1022748720637702338, guid: 16e826b219238e245878eb67fe93ed37, type: 3}
       propertyPath: availableStructures.Array.data[0].structureName
