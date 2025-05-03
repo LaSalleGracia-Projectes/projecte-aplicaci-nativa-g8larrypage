@@ -23,12 +23,18 @@ public class GridManager : MonoBehaviour
     private Structure selectedStructure = null;
 
     private long ciudadId = -1;
-    private const string JugadorIdKey = "jugador_id";  // <- clave unificada
-
+    private const string JugadorIdKey = "jugador_id";
     private bool ciudadCargada = false;
 
     async void Start()
     {
+        if (placedStructuresParent == null)
+        {
+            GameObject newParent = new GameObject("PlacedStructures");
+            newParent.transform.parent = transform;
+            placedStructuresParent = newParent.transform;
+        }
+
         CalculateGridSize();
         GenerateGrid();
 
@@ -185,6 +191,7 @@ public class GridManager : MonoBehaviour
             {
                 SpriteRenderer sr = newStructureObj.AddComponent<SpriteRenderer>();
                 sr.sprite = structureSprite;
+                sr.sortingOrder = 10; // Asegura que esté por delante del grid
             }
 
             cell.placedStructure = structure;
@@ -307,5 +314,28 @@ public class GridManager : MonoBehaviour
                 return s;
         }
         return null;
+    }
+
+    // ==== NUEVAS FUNCIONES PARA MOSTRAR/OCULTAR ====
+
+    public void OcultarEstructuras()
+    {
+        SetStructuresVisibility(false);
+    }
+
+    public void MostrarEstructuras()
+    {
+        SetStructuresVisibility(true);
+    }
+
+    private void SetStructuresVisibility(bool visible)
+    {
+        if (placedStructuresParent != null)
+        {
+            foreach (Transform child in placedStructuresParent)
+            {
+                child.gameObject.SetActive(visible);
+            }
+        }
     }
 }
