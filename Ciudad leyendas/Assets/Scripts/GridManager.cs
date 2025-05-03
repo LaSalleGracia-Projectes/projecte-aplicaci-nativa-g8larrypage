@@ -17,14 +17,17 @@ public class GridManager : MonoBehaviour
     public Button[] structureButtons;
     public Transform placedStructuresParent;
 
-    public long ciudadId = 112; // ID de ciudad a cargar. Puedes cambiarlo dinámicamente según el jugador.
-
     private Vector2 gridOrigin;
     private Cell[,] gridArray;
     private Dictionary<GameObject, Structure> placedStructures = new Dictionary<GameObject, Structure>();
     private Structure selectedStructure = null;
 
-    void Start()
+    private long ciudadId = -1;
+    private const string JugadorIdKey = "jugador_id";  // <- clave unificada
+
+    private bool ciudadCargada = false;
+
+    async void Start()
     {
         CalculateGridSize();
         GenerateGrid();
@@ -35,7 +38,23 @@ public class GridManager : MonoBehaviour
             structureButtons[i].onClick.AddListener(() => SelectStructure(index));
         }
 
-        LoadBuildingsFromSupabase(); // Carga de edificios al iniciar
+        InvokeRepeating(nameof(IntentarObtenerCiudad), 0f, 5f);
+    }
+
+    async void IntentarObtenerCiudad()
+    {
+        if (!ciudadCargada)
+        {
+            await ObtenerCiudadDelJugador();
+
+            if (ciudadId != -1)
+            {
+                ciudadCargada = true;
+                CancelInvoke(nameof(IntentarObtenerCiudad));
+                LoadBuildingsFromSupabase();
+                InvokeRepeating(nameof(LogCiudadIdPeriodicamente), 0f, 5f);
+            }
+        }
     }
 
     void Update()
@@ -43,6 +62,41 @@ public class GridManager : MonoBehaviour
         if (Input.GetMouseButtonDown(0) && selectedStructure != null)
         {
             DetectCellClick();
+        }
+    }
+
+    void LogCiudadIdPeriodicamente()
+    {
+        Debug.Log($"[LOG - {DateTime.Now:HH:mm:ss}] ID de ciudad del jugador: {ciudadId}");
+    }
+
+    async Task ObtenerCiudadDelJugador()
+    {
+        try
+        {
+            int storedJugadorId = PlayerPrefs.GetInt(JugadorIdKey, -1);
+            if (storedJugadorId == -1)
+            {
+                Debug.LogError("ID del jugador no encontrado en PlayerPrefs (clave: 'jugador_id').");
+                return;
+            }
+
+            var client = await SupabaseManager.Instance.GetClient();
+            var response = await client.From<Ciudad>().Where(c => c.IdJugador == storedJugadorId).Get();
+
+            if (response.Models.Count > 0)
+            {
+                ciudadId = response.Models[0].IdCiudad;
+                Debug.Log($"Ciudad encontrada para jugador {storedJugadorId}: {ciudadId}");
+            }
+            else
+            {
+                Debug.LogWarning("No se encontró ciudad asociada al jugador.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Error al obtener la ciudad del jugador: {ex.Message}");
         }
     }
 
@@ -126,7 +180,6 @@ public class GridManager : MonoBehaviour
             newStructureObj.transform.position = cell.transform.position + new Vector3(0, 0, -1);
             newStructureObj.transform.parent = placedStructuresParent;
 
-            // Usamos la skin desde SkinManager
             Sprite structureSprite = SkinManager.Instance.GetSpriteForSkin(structure.skinId);
             if (structureSprite != null)
             {
@@ -162,7 +215,6 @@ public class GridManager : MonoBehaviour
         {
             var client = await SupabaseManager.Instance.GetClient();
 
-            // Verificar si ya existe un edificio en esta celda para esta ciudad
             var existingResponse = await client
                 .From<Edificio>()
                 .Where(x => x.IdCiudad == ciudadId)
@@ -171,7 +223,6 @@ public class GridManager : MonoBehaviour
 
             if (existingResponse.Models.Count > 0)
             {
-                // Ya existe, así que lo actualizamos
                 var existing = existingResponse.Models[0];
 
                 existing.TipoEdificio = structure.structureName;
@@ -184,7 +235,6 @@ public class GridManager : MonoBehaviour
             }
             else
             {
-                // No existe, así que lo insertamos
                 var edificio = new Edificio
                 {
                     TipoEdificio = structure.structureName,
@@ -237,7 +287,7 @@ public class GridManager : MonoBehaviour
 
                     if (structure != null)
                     {
-                        structure = structure.CloneWithSkin(edificio.IdSkin); // Aplica la skin correcta
+                        structure = structure.CloneWithSkin(edificio.IdSkin);
                         PlaceStructureInCell(cell.gameObject, structure);
                     }
                 }
