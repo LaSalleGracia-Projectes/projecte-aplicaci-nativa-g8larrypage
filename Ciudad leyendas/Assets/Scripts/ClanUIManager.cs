@@ -38,7 +38,6 @@ public class ClanUIManager : MonoBehaviour
     private Coroutine searchCoroutine;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     async void Start()
     {
         // Inicializamos el servicio de clanes
@@ -52,9 +51,22 @@ public class ClanUIManager : MonoBehaviour
         // Configurar el listener para el input field
         clanCodeInputField.onValueChanged.AddListener(OnClanCodeInputChanged);
 
+        // Establecer texto por defecto si no hay nada escrito
+        if (searchResultText != null && string.IsNullOrEmpty(clanCodeInputField.text))
+        {
+            searchResultText.text = "You're not in a clan. Search for a clan code or create your clan";
+            searchResultText.color = Color.black;
+        }
+
         // Comprobar si el jugador ya pertenece a un clan
         int clanId = PlayerPrefs.GetInt("IdClan", 0);
         Debug.Log($"ClanID al iniciar: {clanId}");
+
+        // Desactivar el botón de crear clan si el jugador ya pertenece a uno
+        if (btnOpenCreateClanMenu != null)
+        {
+            btnOpenCreateClanMenu.interactable = (clanId == 0);
+        }
 
         if (clanId > 0)
         {
@@ -78,6 +90,22 @@ public class ClanUIManager : MonoBehaviour
                     noClanMenu.SetActive(true);
                     clanDetailsMenu.SetActive(false);
                     Debug.LogWarning("No se pudo encontrar el clan con ID: " + clanId);
+
+                    // Corregimos el PlayerPrefs ya que el clan no existe
+                    PlayerPrefs.SetInt("IdClan", 0);
+
+                    // Restaurar mensaje por defecto
+                    if (searchResultText != null)
+                    {
+                        searchResultText.text = "You're not in a clan. Search for a clan code or create your clan";
+                        searchResultText.color = Color.black;
+                    }
+
+                    // Ya que no tiene clan, activamos el botón de crear
+                    if (btnOpenCreateClanMenu != null)
+                    {
+                        btnOpenCreateClanMenu.interactable = true;
+                    }
                 }
             }
             catch (System.Exception ex)
@@ -85,18 +113,42 @@ public class ClanUIManager : MonoBehaviour
                 Debug.LogError("Error al cargar información del clan: " + ex.Message);
                 noClanMenu.SetActive(true);
                 clanDetailsMenu.SetActive(false);
+
+                // Restaurar mensaje por defecto
+                if (searchResultText != null)
+                {
+                    searchResultText.text = "You're not in a clan. Search for a clan code or create your clan";
+                    searchResultText.color = Color.black;
+                }
+
+                // Si hay un error, permitimos crear un clan nuevo
+                if (btnOpenCreateClanMenu != null)
+                {
+                    btnOpenCreateClanMenu.interactable = true;
+                }
             }
         }
         else
         {
             // El jugador no pertenece a ningún clan, mostramos la interfaz de búsqueda
             noClanMenu.SetActive(true);
-            btnOpenCreateClanMenu.interactable = true;
             Debug.Log("El jugador no pertenece a ningún clan, mostrando menú de búsqueda");
+
+            // Aseguramos que el texto por defecto se muestre
+            if (searchResultText != null)
+            {
+                searchResultText.text = "You're not in a clan. Search for a clan code or create your clan";
+                searchResultText.color = Color.black;
+            }
+
+            // Aseguramos que el botón de crear esté activo
+            if (btnOpenCreateClanMenu != null)
+            {
+                btnOpenCreateClanMenu.interactable = true;
+            }
         }
     }
 
-    // Método para mostrar los detalles de un clan
     // Método para mostrar los detalles de un clan
     private async void ShowClanDetails(Clan clan)
     {
@@ -154,8 +206,6 @@ public class ClanUIManager : MonoBehaviour
         }
     }
 
-// Implementación del método JoinLeaveClan usando ClanServices
-// Implementación del método JoinLeaveClan usando ClanServices
     public async void JoinLeaveClan()
     {
         // Obtener el ID del jugador actual
@@ -181,8 +231,16 @@ public class ClanUIManager : MonoBehaviour
                     if (resultado == 1)
                     {
                         Debug.Log("Te has unido al clan correctamente");
-                        // Actualizar la interfaz
+                        // Actualizar la interfaz y el PlayerPrefs
                         PlayerPrefs.SetInt("IdClan", clan.IdClan);
+                        PlayerPrefs.Save();
+
+                        // Desactivar el botón de crear clan al unirse a uno
+                        if (btnOpenCreateClanMenu != null)
+                        {
+                            btnOpenCreateClanMenu.interactable = false;
+                        }
+
                         findClan(); // Refrescar la información
                     }
                     else
@@ -206,8 +264,25 @@ public class ClanUIManager : MonoBehaviour
                 {
                     Debug.Log("Has borrado el clan correctamente");
                     PlayerPrefs.SetInt("IdClan", 0);
-                    CloseClanDetailsMenu();
+                    PlayerPrefs.Save();
+
+                    // Actualizar la interfaz
+                    clanDetailsMenu.SetActive(false);
                     noClanMenu.SetActive(true);
+
+                    // Limpiar campo de búsqueda y restaurar texto por defecto
+                    clanCodeInputField.text = "";
+                    if (searchResultText != null)
+                    {
+                        searchResultText.text = "You're not in a clan. Search for a clan code or create your clan";
+                        searchResultText.color = Color.black;
+                    }
+
+                    // Activar el botón de crear clan
+                    if (btnOpenCreateClanMenu != null)
+                    {
+                        btnOpenCreateClanMenu.interactable = true;
+                    }
                 }
                 else
                 {
@@ -223,8 +298,25 @@ public class ClanUIManager : MonoBehaviour
                 {
                     Debug.Log("Has abandonado el clan correctamente");
                     PlayerPrefs.SetInt("IdClan", 0);
-                    CloseClanDetailsMenu();
+                    PlayerPrefs.Save();
+
+                    // Actualizar la interfaz
+                    clanDetailsMenu.SetActive(false);
                     noClanMenu.SetActive(true);
+
+                    // Limpiar campo de búsqueda y restaurar texto por defecto
+                    clanCodeInputField.text = "";
+                    if (searchResultText != null)
+                    {
+                        searchResultText.text = "You're not in a clan. Search for a clan code or create your clan";
+                        searchResultText.color = Color.black;
+                    }
+
+                    // Activar el botón de crear clan
+                    if (btnOpenCreateClanMenu != null)
+                    {
+                        btnOpenCreateClanMenu.interactable = true;
+                    }
                 }
                 else
                 {
@@ -359,6 +451,18 @@ public class ClanUIManager : MonoBehaviour
                     searchResultText.color = Color.green;
                 }
 
+                // Obtener el ID del clan actual del jugador
+                int jugadorIdClanActual = PlayerPrefs.GetInt("IdClan", 0);
+
+                // Verificar si el jugador está viendo su propio clan o uno ajeno
+                bool isOwnClan = (jugadorIdClanActual == clan.IdClan);
+
+                // Configurar el botón de cerrar según corresponda
+                if (btnCloseClanDetailsMenu != null)
+                {
+                    btnCloseClanDetailsMenu.gameObject.SetActive(!isOwnClan);
+                }
+
                 // Configurar la interfaz con la información del clan
                 clanDetailsMenu.SetActive(true);
                 clanNameText.text = clan.Nombre;
@@ -367,14 +471,18 @@ public class ClanUIManager : MonoBehaviour
                 // Utilizamos el servicio existente para obtener los jugadores del clan
                 var players = await clanServices.GetClanPlayers(clan.IdClan);
 
-                // Obtener el ID del clan actual del jugador
-                int jugadorIdClanActual = PlayerPrefs.GetInt("IdClan", 0);
-                Debug.Log($"ID del clan actual del jugador: {jugadorIdClanActual}, ID del clan buscado: {clan.IdClan}");
-
                 // Configuración del botón según si es su clan actual o no
-                if (jugadorIdClanActual == clan.IdClan)
+                int jugadorId = PlayerPrefs.GetInt("jugador_id", 0);
+
+                if (isOwnClan && jugadorId == clan.IdLeader)
                 {
-                    // Es su clan actual, puede abandonarlo
+                    // Es su clan y es el líder
+                    joinLeaveClanButton.GetComponentInChildren<TMP_Text>().text = "Borrar Clan";
+                    joinLeaveClanButton.interactable = true;
+                }
+                else if (isOwnClan)
+                {
+                    // Es su clan pero no es líder
                     joinLeaveClanButton.GetComponentInChildren<TMP_Text>().text = "Abandonar Clan";
                     joinLeaveClanButton.interactable = true;
                 }
@@ -446,7 +554,7 @@ public class ClanUIManager : MonoBehaviour
         TMP_Text infoLider = GameObject.Find("InfoMember (0)")?.GetComponent<TMP_Text>();
         if (infoLider != null && lider != null)
         {
-            infoLider.text = $"1 | {lider.IdJugador} | {lider.Nombre} | {lider.PasosTotales} pasos";
+            infoLider.text = $"1 | {lider.Experiencia} | {lider.Nombre} | {lider.PasosTotales} pasos";
             infoLider.color = Color.yellow; // Destacar al líder
         }
 
@@ -457,7 +565,7 @@ public class ClanUIManager : MonoBehaviour
             if (infoMember != null)
             {
                 infoMember.text =
-                    $"{i + 2} | {miembrosSinLider[i].IdJugador} | {miembrosSinLider[i].Nombre} | {miembrosSinLider[i].PasosTotales} pasos";
+                    $"{i + 2} | {miembrosSinLider[i].Experiencia} | {miembrosSinLider[i].Nombre} | {miembrosSinLider[i].PasosTotales} pasos";
                 infoMember.color = Color.white;
             }
         }
@@ -497,8 +605,40 @@ public class ClanUIManager : MonoBehaviour
         Debug.Log("Clan code copied to clipboard: " + clanCodeText);
     }
 
-    public void CloseClanDetailsMenu()
+    public async void CloseClanDetailsMenu()
     {
+        int jugadorClanId = PlayerPrefs.GetInt("IdClan", 0);
+
+        // Si el jugador pertenece a un clan, mostrar ese clan al cerrar el detalle del clan ajeno
+        if (jugadorClanId > 0)
+        {
+            try
+            {
+                var clanPropio = await clanServices.GetClanByInfo(jugadorClanId.ToString());
+                if (clanPropio != null)
+                {
+                    ShowClanDetails(clanPropio);
+                    return;
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError("Error al cargar información del clan propio: " + ex.Message);
+            }
+        }
+
+        // Si no pertenece a un clan o hubo error al obtenerlo, cerrar el menú normalmente
         clanDetailsMenu.SetActive(false);
+
+        // Si no está en un clan, restaurar el texto por defecto y limpiar el campo
+        if (jugadorClanId == 0)
+        {
+            clanCodeInputField.text = "";
+            if (searchResultText != null)
+            {
+                searchResultText.text = "You're not in a clan. Search for a clan code or create your clan";
+                searchResultText.color = Color.black;
+            }
+        }
     }
 }
