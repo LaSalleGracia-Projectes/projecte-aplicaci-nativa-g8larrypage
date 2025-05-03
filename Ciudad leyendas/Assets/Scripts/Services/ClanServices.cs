@@ -152,6 +152,41 @@ namespace Services
                 return 3;
             }
         }
+        
+        public async Task<bool> DeleteClan(int clanId)
+        {
+            try
+            {
+                var supabase = await _supabaseManager.GetClient();
+
+                // Primero, obtener todos los jugadores del clan
+                var jugadores = await GetClanPlayers(clanId);
+                if (jugadores != null && jugadores.Count > 0)
+                {
+                    // Actualizar cada jugador individualmente para quitar su pertenencia al clan
+                    foreach (var jugador in jugadores)
+                    {
+                        jugador.IdClan = null;
+                        await supabase.From<Jugador>().Update(jugador);
+                    }
+
+                    Debug.Log($"Se han eliminado {jugadores.Count} miembros del clan {clanId}");
+                }
+
+                // Luego eliminar el clan usando el método Delete con filtro
+                await supabase.From<Clan>()
+                    .Filter("id_clan", Constants.Operator.Equals, clanId)
+                    .Delete();
+
+                Debug.Log($"Clan {clanId} eliminado con éxito");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Error al eliminar el clan: {ex.Message}");
+                return false;
+            }
+        }
 
         public async Task<List<Jugador>> GetAllClanMembers(int clanId)
         {

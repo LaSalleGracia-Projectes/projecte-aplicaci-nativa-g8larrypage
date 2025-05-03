@@ -1289,8 +1289,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 00c10915564e0ed4b8936985ac50414d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  noClanMenu: {fileID: 0}
-  ClanCodeInputField: {fileID: 1009304322}
+  noClanMenu: {fileID: 1033412241}
+  clanCodeInputField: {fileID: 1009304322}
   searchResultText: {fileID: 1969785664}
   createClanMenu: {fileID: 2003239441}
   clanNameCreate: {fileID: 687341747}

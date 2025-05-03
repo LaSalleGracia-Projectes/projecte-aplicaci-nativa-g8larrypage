@@ -4,7 +4,9 @@ using System.Linq;
 using Models;
 using Services;
 using TMPro;
+using UnityEditor;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public class ClanUIManager : MonoBehaviour
@@ -12,7 +14,9 @@ public class ClanUIManager : MonoBehaviour
     [Header("No clan menu stuff")] public GameObject noClanMenu;
 
 
-    [Header("Search Clan Menu Stuff")] public TMP_InputField ClanCodeInputField;
+    [FormerlySerializedAs("ClanCodeInputField")] [Header("Search Clan Menu Stuff")]
+    public TMP_InputField clanCodeInputField;
+
     public TMP_Text searchResultText;
 
     [Header("Create Clan Menu Stuff")] public GameObject createClanMenu;
@@ -34,14 +38,19 @@ public class ClanUIManager : MonoBehaviour
     private Coroutine searchCoroutine;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
+    // Start is called once before the first execution of Update after the MonoBehaviour is created
     async void Start()
     {
-        createClanMenu.SetActive(false);
-        btnOpenCreateClanMenu.interactable = true;
+        // Inicializamos el servicio de clanes
         clanServices = new ClanServices();
 
+        // Ocultamos todos los menús inicialmente
+        noClanMenu.SetActive(false);
+        createClanMenu.SetActive(false);
+        clanDetailsMenu.SetActive(false);
+
         // Configurar el listener para el input field
-        ClanCodeInputField.onValueChanged.AddListener(OnClanCodeInputChanged);
+        clanCodeInputField.onValueChanged.AddListener(OnClanCodeInputChanged);
 
         // Comprobar si el jugador ya pertenece a un clan
         int clanId = PlayerPrefs.GetInt("IdClan", 0);
@@ -55,14 +64,17 @@ public class ClanUIManager : MonoBehaviour
                 var clan = await clanServices.GetClanByInfo(clanId.ToString());
                 if (clan != null)
                 {
-                    // Ocultar el menú de "No Clan"
+                    // Mostramos los detalles del clan, pero mantenemos oculto el menú de búsqueda
                     noClanMenu.SetActive(false);
+                    clanDetailsMenu.SetActive(true);
+
                     // Mostrar los detalles del clan
                     ShowClanDetails(clan);
+                    Debug.Log($"Mostrando información del clan: {clan.Nombre}");
                 }
                 else
                 {
-                    // No se encontró el clan, mostrar menú de "No Clan"
+                    // No se encontró el clan, mostramos el menú de búsqueda y "No Clan"
                     noClanMenu.SetActive(true);
                     clanDetailsMenu.SetActive(false);
                     Debug.LogWarning("No se pudo encontrar el clan con ID: " + clanId);
@@ -77,12 +89,14 @@ public class ClanUIManager : MonoBehaviour
         }
         else
         {
-            // El jugador no pertenece a ningún clan
+            // El jugador no pertenece a ningún clan, mostramos la interfaz de búsqueda
             noClanMenu.SetActive(true);
-            clanDetailsMenu.SetActive(false);
+            btnOpenCreateClanMenu.interactable = true;
+            Debug.Log("El jugador no pertenece a ningún clan, mostrando menú de búsqueda");
         }
     }
 
+    // Método para mostrar los detalles de un clan
     // Método para mostrar los detalles de un clan
     private async void ShowClanDetails(Clan clan)
     {
@@ -90,9 +104,32 @@ public class ClanUIManager : MonoBehaviour
         clanNameText.text = clan.Nombre;
         clanCode.text = clan.ClanCode;
 
-        // Configurar el botón como "Abandonar Clan" ya que es el clan del jugador
-        joinLeaveClanButton.GetComponentInChildren<TMP_Text>().text = "Abandonar Clan";
-        joinLeaveClanButton.interactable = true;
+        // Obtener el ID del jugador actual y su clan
+        int jugadorId = PlayerPrefs.GetInt("jugador_id", 0);
+        int jugadorClanId = PlayerPrefs.GetInt("IdClan", 0);
+
+        // Verificar si el jugador está viendo su propio clan o uno ajeno
+        bool isOwnClan = (jugadorClanId == clan.IdClan);
+
+        // Configurar el botón de cerrar según corresponda
+        if (btnCloseClanDetailsMenu != null)
+        {
+            btnCloseClanDetailsMenu.gameObject.SetActive(!isOwnClan);
+        }
+
+        // Configurar el botón según si es el líder o no
+        if (jugadorId == clan.IdLeader)
+        {
+            // Es el líder del clan, puede borrarlo
+            joinLeaveClanButton.GetComponentInChildren<TMP_Text>().text = "Borrar Clan";
+            joinLeaveClanButton.interactable = true;
+        }
+        else
+        {
+            // Es miembro normal, puede abandonar el clan
+            joinLeaveClanButton.GetComponentInChildren<TMP_Text>().text = "Abandonar Clan";
+            joinLeaveClanButton.interactable = true;
+        }
 
         // Obtener los jugadores del clan
         var players = await clanServices.GetClanPlayers(clan.IdClan);
@@ -114,6 +151,86 @@ public class ClanUIManager : MonoBehaviour
         {
             clanDetailsText.text = "No se pudo obtener información de los miembros del clan";
             ClearMemberTexts();
+        }
+    }
+
+// Implementación del método JoinLeaveClan usando ClanServices
+// Implementación del método JoinLeaveClan usando ClanServices
+    public async void JoinLeaveClan()
+    {
+        // Obtener el ID del jugador actual
+        int jugadorId = PlayerPrefs.GetInt("jugador_id", 0);
+        int clanIdActual = PlayerPrefs.GetInt("IdClan", 0);
+
+        if (jugadorId == 0)
+        {
+            Debug.LogError("No hay un jugador identificado");
+            return;
+        }
+
+        if (clanIdActual == 0)
+        {
+            // Unirse al clan
+            if (clanCode.text != null && clanCode.text.Length > 0)
+            {
+                var clan = await clanServices.GetClanByInfo(clanCode.text);
+                if (clan != null)
+                {
+                    int resultado = await clanServices.JoinClan(clan.IdClan);
+
+                    if (resultado == 1)
+                    {
+                        Debug.Log("Te has unido al clan correctamente");
+                        // Actualizar la interfaz
+                        PlayerPrefs.SetInt("IdClan", clan.IdClan);
+                        findClan(); // Refrescar la información
+                    }
+                    else
+                    {
+                        Debug.LogError("No se pudo unir al clan, código de error: " + resultado);
+                    }
+                }
+            }
+        }
+        else
+        {
+            // Verificar si el usuario es el líder del clan
+            var clan = await clanServices.GetClanByInfo(clanIdActual.ToString());
+
+            if (clan != null && clan.IdLeader == jugadorId)
+            {
+                // Es líder, borrar el clan directamente sin confirmación
+                bool resultado = await clanServices.DeleteClan(clan.IdClan);
+
+                if (resultado)
+                {
+                    Debug.Log("Has borrado el clan correctamente");
+                    PlayerPrefs.SetInt("IdClan", 0);
+                    CloseClanDetailsMenu();
+                    noClanMenu.SetActive(true);
+                }
+                else
+                {
+                    Debug.LogError("No se pudo borrar el clan");
+                }
+            }
+            else
+            {
+                // No es líder, abandonar el clan
+                int resultado = await clanServices.LeaveClan();
+
+                if (resultado == 1)
+                {
+                    Debug.Log("Has abandonado el clan correctamente");
+                    PlayerPrefs.SetInt("IdClan", 0);
+                    CloseClanDetailsMenu();
+                    noClanMenu.SetActive(true);
+                }
+                else
+                {
+                    Debug.LogError("No se pudo abandonar el clan, código de error: " + resultado);
+                }
+            }
         }
     }
 
@@ -210,7 +327,7 @@ public class ClanUIManager : MonoBehaviour
 
     public async void findClan()
     {
-        string clanInfo = ClanCodeInputField.text;
+        string clanInfo = clanCodeInputField.text;
 
         if (clanInfo.Length < 5)
         {
@@ -372,60 +489,6 @@ public class ClanUIManager : MonoBehaviour
     }
 
     // Implementación del método JoinLeaveClan usando ClanServices
-    public async void JoinLeaveClan()
-    {
-        // Obtener el ID del jugador actual
-        int jugadorId = PlayerPrefs.GetInt("jugador_id", 0);
-        int clanIdActual = PlayerPrefs.GetInt("IdClan", 0);
-
-        if (jugadorId == 0)
-        {
-            Debug.LogError("No hay un jugador identificado");
-            return;
-        }
-
-        if (clanIdActual == 0)
-        {
-            // Unirse al clan
-            if (clanCode.text != null && clanCode.text.Length > 0)
-            {
-                var clan = await clanServices.GetClanByInfo(clanCode.text);
-                if (clan != null)
-                {
-                    int resultado = await clanServices.JoinClan(clan.IdClan);
-
-                    if (resultado == 1)
-                    {
-                        Debug.Log("Te has unido al clan correctamente");
-                        // Actualizar la interfaz
-                        PlayerPrefs.SetInt("IdClan", clan.IdClan);
-                        findClan(); // Refrescar la información
-                    }
-                    else
-                    {
-                        Debug.LogError("No se pudo unir al clan, código de error: " + resultado);
-                    }
-                }
-            }
-        }
-        else
-        {
-            // Abandonar el clan
-            int resultado = await clanServices.LeaveClan();
-
-            if (resultado == 1)
-            {
-                Debug.Log("Has abandonado el clan correctamente");
-                PlayerPrefs.SetInt("IdClan", 0);
-                CloseClanDetailsMenu();
-                noClanMenu.SetActive(true);
-            }
-            else
-            {
-                Debug.LogError("No se pudo abandonar el clan, código de error: " + resultado);
-            }
-        }
-    }
 
     public void CopyClanCode()
     {
