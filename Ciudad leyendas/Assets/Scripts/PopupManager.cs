@@ -8,6 +8,7 @@ public class PopupManager : MonoBehaviour
     public Button closeButton;
     public GameObject gridManager;
     public Transform placedStructuresParent;
+    public GameObject ajustesButton;
 
     void Start()
     {
@@ -21,6 +22,8 @@ public class PopupManager : MonoBehaviour
         popupPanel.SetActive(true);
         gridManager.SetActive(false);
         TogglePlacedStructures(false);
+        ajustesButton.SetActive(false);
+       
     }
 
     public void ClosePopup()
@@ -28,6 +31,7 @@ public class PopupManager : MonoBehaviour
         popupPanel.SetActive(false);
         gridManager.SetActive(true);
         TogglePlacedStructures(true);
+        ajustesButton.SetActive(true);
     }
 
     void TogglePlacedStructures(bool state)
