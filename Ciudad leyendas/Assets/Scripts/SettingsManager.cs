@@ -13,6 +13,7 @@ public class SettingsManager : MonoBehaviour
     public Button closeButton;
     public Slider volumeSlider;
     public TextMeshProUGUI playerNameText;
+    public TMP_InputField playerNameInputField;
 
     private bool settingsOpen = false;
 
