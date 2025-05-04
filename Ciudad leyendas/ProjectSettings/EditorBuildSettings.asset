@@ -20,6 +20,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/ClanPrototipo.unity
     guid: fbfdb26349ffc034aabde2cb20fa1545
+  - enabled: 1
+    path: Assets/Scenes/Profile.unity
+    guid: fad8998b92d66e346a0d7f5c34c12f4b
   m_configObjects:
     com.unity.adaptiveperformance.google.android.provider_settings: {fileID: 11400000, guid: 5f04f2a01897f114784d829a7d9f4616, type: 2}
     com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: 6e8832c6565facc44ba8984d0bddf6ac, type: 2}
