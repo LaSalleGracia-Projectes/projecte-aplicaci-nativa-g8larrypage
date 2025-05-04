@@ -279,7 +279,7 @@ namespace Services
 
         public void GoToGame()
         {
-            SceneManager.LoadScene("ClanPrototipo");
+            SceneManager.LoadScene("Profile");
         }
     }
 }
