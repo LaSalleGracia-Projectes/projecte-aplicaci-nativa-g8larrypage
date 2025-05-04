@@ -30,6 +30,12 @@ public class FormManager : MonoBehaviour
     {
         _loginManager = new LoginManager();
         _signUpManager = new SignUpManager();
+
+        // Asigna la referencia al LoginManager
+        if (googleSignInManager != null)
+        {
+            googleSignInManager.SetLoginManager(_loginManager);
+        }
     }
 
     void Start()
