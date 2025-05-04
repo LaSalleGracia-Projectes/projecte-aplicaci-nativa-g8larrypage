@@ -156,12 +156,19 @@ public class ClanUIManager : MonoBehaviour
         clanNameText.text = clan.Nombre;
         clanCode.text = clan.ClanCode;
 
+        // Ocultar el texto de búsqueda cuando se muestran los detalles
+        if (searchResultText != null)
+        {
+            searchResultText.gameObject.SetActive(false);
+        }
+
         // Obtener el ID del jugador actual y su clan
         int jugadorId = PlayerPrefs.GetInt("jugador_id", 0);
         int jugadorClanId = PlayerPrefs.GetInt("IdClan", 0);
 
         // Verificar si el jugador está viendo su propio clan o uno ajeno
         bool isOwnClan = (jugadorClanId == clan.IdClan);
+        bool isJoinAction = (jugadorClanId == 0);
 
         // Configurar el botón de cerrar según corresponda
         if (btnCloseClanDetailsMenu != null)
@@ -169,18 +176,45 @@ public class ClanUIManager : MonoBehaviour
             btnCloseClanDetailsMenu.gameObject.SetActive(!isOwnClan);
         }
 
-        // Configurar el botón según si es el líder o no
-        if (jugadorId == clan.IdLeader)
+        // Configurar el botón según si es el líder o no y cambiar su color
+        if (isOwnClan && jugadorId == clan.IdLeader)
         {
             // Es el líder del clan, puede borrarlo
             joinLeaveClanButton.GetComponentInChildren<TMP_Text>().text = "Borrar Clan";
             joinLeaveClanButton.interactable = true;
+
+            // Cambiar a color rojo para indicar acción de borrar
+            ColorBlock colors = joinLeaveClanButton.colors;
+            colors.normalColor = new Color(0.9f, 0.3f, 0.3f, 1f); // Rojo
+            colors.highlightedColor = new Color(1f, 0.4f, 0.4f, 1f);
+            colors.pressedColor = new Color(0.8f, 0.2f, 0.2f, 1f);
+            joinLeaveClanButton.colors = colors;
         }
-        else
+        else if (isOwnClan)
         {
             // Es miembro normal, puede abandonar el clan
             joinLeaveClanButton.GetComponentInChildren<TMP_Text>().text = "Abandonar Clan";
             joinLeaveClanButton.interactable = true;
+
+            // Cambiar a color rojo para indicar acción de abandonar
+            ColorBlock colors = joinLeaveClanButton.colors;
+            colors.normalColor = new Color(0.9f, 0.3f, 0.3f, 1f); // Rojo
+            colors.highlightedColor = new Color(1f, 0.4f, 0.4f, 1f);
+            colors.pressedColor = new Color(0.8f, 0.2f, 0.2f, 1f);
+            joinLeaveClanButton.colors = colors;
+        }
+        else
+        {
+            // No es del clan, puede unirse
+            joinLeaveClanButton.GetComponentInChildren<TMP_Text>().text = "Unirse al Clan";
+            joinLeaveClanButton.interactable = true;
+
+            // Cambiar a color verde para indicar acción de unirse
+            ColorBlock colors = joinLeaveClanButton.colors;
+            colors.normalColor = new Color(0.3f, 0.9f, 0.3f, 1f); // Verde
+            colors.highlightedColor = new Color(0.4f, 1f, 0.4f, 1f);
+            colors.pressedColor = new Color(0.2f, 0.8f, 0.2f, 1f);
+            joinLeaveClanButton.colors = colors;
         }
 
         // Obtener los jugadores del clan
@@ -260,6 +294,7 @@ public class ClanUIManager : MonoBehaviour
                 // Es líder, borrar el clan directamente sin confirmación
                 bool resultado = await clanServices.DeleteClan(clan.IdClan);
 
+                // En la sección donde el jugador abandona o borra el clan:
                 if (resultado)
                 {
                     Debug.Log("Has borrado el clan correctamente");
@@ -274,6 +309,7 @@ public class ClanUIManager : MonoBehaviour
                     clanCodeInputField.text = "";
                     if (searchResultText != null)
                     {
+                        searchResultText.gameObject.SetActive(true); // Asegurar que es visible
                         searchResultText.text = "You're not in a clan. Search for a clan code or create your clan";
                         searchResultText.color = Color.black;
                     }
@@ -449,10 +485,13 @@ public class ClanUIManager : MonoBehaviour
                 {
                     searchResultText.text = $"Clan encontrado: {clan.Nombre}";
                     searchResultText.color = Color.green;
+                    // Ocultamos el texto justo antes de mostrar los detalles
+                    searchResultText.gameObject.SetActive(false);
                 }
 
                 // Obtener el ID del clan actual del jugador
                 int jugadorIdClanActual = PlayerPrefs.GetInt("IdClan", 0);
+                int jugadorId = PlayerPrefs.GetInt("jugador_id", 0);
 
                 // Verificar si el jugador está viendo su propio clan o uno ajeno
                 bool isOwnClan = (jugadorIdClanActual == clan.IdClan);
@@ -468,55 +507,46 @@ public class ClanUIManager : MonoBehaviour
                 clanNameText.text = clan.Nombre;
                 clanCode.text = clan.ClanCode;
 
-                // Utilizamos el servicio existente para obtener los jugadores del clan
-                var players = await clanServices.GetClanPlayers(clan.IdClan);
-
-                // Configuración del botón según si es su clan actual o no
-                int jugadorId = PlayerPrefs.GetInt("jugador_id", 0);
-
+                // Configurar el botón de unirse/abandonar y su color
                 if (isOwnClan && jugadorId == clan.IdLeader)
                 {
-                    // Es su clan y es el líder
+                    // Es el líder, puede borrar el clan
                     joinLeaveClanButton.GetComponentInChildren<TMP_Text>().text = "Borrar Clan";
-                    joinLeaveClanButton.interactable = true;
+
+                    // Color rojo para borrar
+                    ColorBlock colors = joinLeaveClanButton.colors;
+                    colors.normalColor = new Color(0.9f, 0.3f, 0.3f, 1f); // Rojo
+                    colors.highlightedColor = new Color(1f, 0.4f, 0.4f, 1f);
+                    colors.pressedColor = new Color(0.8f, 0.2f, 0.2f, 1f);
+                    joinLeaveClanButton.colors = colors;
                 }
                 else if (isOwnClan)
                 {
-                    // Es su clan pero no es líder
+                    // Es miembro, puede abandonar el clan
                     joinLeaveClanButton.GetComponentInChildren<TMP_Text>().text = "Abandonar Clan";
-                    joinLeaveClanButton.interactable = true;
-                }
-                else if (jugadorIdClanActual != 0)
-                {
-                    // Pertenece a otro clan, no puede unirse
-                    joinLeaveClanButton.GetComponentInChildren<TMP_Text>().text = "Unirse al Clan";
-                    joinLeaveClanButton.interactable = false;
+
+                    // Color rojo para abandonar
+                    ColorBlock colors = joinLeaveClanButton.colors;
+                    colors.normalColor = new Color(0.9f, 0.3f, 0.3f, 1f); // Rojo
+                    colors.highlightedColor = new Color(1f, 0.4f, 0.4f, 1f);
+                    colors.pressedColor = new Color(0.8f, 0.2f, 0.2f, 1f);
+                    joinLeaveClanButton.colors = colors;
                 }
                 else
                 {
-                    // No pertenece a ningún clan, puede unirse
+                    // No es miembro, puede unirse
                     joinLeaveClanButton.GetComponentInChildren<TMP_Text>().text = "Unirse al Clan";
-                    joinLeaveClanButton.interactable = true;
+
+                    // Color verde para unirse
+                    ColorBlock colors = joinLeaveClanButton.colors;
+                    colors.normalColor = new Color(0.3f, 0.9f, 0.3f, 1f); // Verde
+                    colors.highlightedColor = new Color(0.4f, 1f, 0.4f, 1f);
+                    colors.pressedColor = new Color(0.2f, 0.8f, 0.2f, 1f);
+                    joinLeaveClanButton.colors = colors;
                 }
 
-                if (players != null)
-                {
-                    var totalSteps = players.Sum(player => player.PasosTotales);
-                    int mediaSteps = players.Count > 0 ? totalSteps / players.Count : 0;
-
-                    clanDetailsText.text =
-                        $"Numero de miembros: {players.Count}/10\n" +
-                        $"Pasos totales: {totalSteps}\n" +
-                        $"Pasos por miembro: {mediaSteps}\n" +
-                        $"________________________________";
-
-                    DisplayClanMembers(players, clan.IdLeader);
-                }
-                else
-                {
-                    clanDetailsText.text = "No se pudo obtener información de los miembros del clan";
-                    ClearMemberTexts();
-                }
+                // Cargar y mostrar los miembros del clan
+                ShowClanDetails(clan);
             }
             else
             {
@@ -524,6 +554,8 @@ public class ClanUIManager : MonoBehaviour
                 {
                     searchResultText.text = "No se encontró ningún clan con ese código o nombre";
                     searchResultText.color = Color.red;
+                    // Aseguramos que el texto sea visible en caso de error
+                    searchResultText.gameObject.SetActive(true);
                 }
             }
         }
@@ -533,6 +565,8 @@ public class ClanUIManager : MonoBehaviour
             {
                 searchResultText.text = "Error al buscar el clan: " + ex.Message;
                 searchResultText.color = Color.red;
+                // Aseguramos que el texto sea visible en caso de error
+                searchResultText.gameObject.SetActive(true);
             }
 
             Debug.LogError("Error buscando clan: " + ex.Message);
@@ -629,6 +663,12 @@ public class ClanUIManager : MonoBehaviour
 
         // Si no pertenece a un clan o hubo error al obtenerlo, cerrar el menú normalmente
         clanDetailsMenu.SetActive(false);
+
+        // Mostrar nuevamente el texto de búsqueda
+        if (searchResultText != null)
+        {
+            searchResultText.gameObject.SetActive(true);
+        }
 
         // Si no está en un clan, restaurar el texto por defecto y limpiar el campo
         if (jugadorClanId == 0)
