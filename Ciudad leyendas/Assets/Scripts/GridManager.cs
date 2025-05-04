@@ -17,7 +17,7 @@ public class GridManager : MonoBehaviour
     public Structure[] availableStructures;
     public Button[] structureButtons;
     public Transform placedStructuresParent;
-    public TextMeshProUGUI messageText;  // Mensaje de advertencia
+    public TextMeshProUGUI messageText;
 
     private Vector2 gridOrigin;
     private Cell[,] gridArray;
@@ -70,7 +70,6 @@ public class GridManager : MonoBehaviour
 
     async Task ActualizarPasos()
     {
-        // Actualiza los pasos del jugador para tener el valor actualizado
         pasosTotales = await PasosDeOroUI.Instance.ObtenerPasosTotales();
     }
 
@@ -190,10 +189,14 @@ public class GridManager : MonoBehaviour
 
     async void PlaceStructureInCell(GameObject cellObject, Structure structure)
     {
-        // Verificar si el jugador tiene suficiente dinero
         if (pasosTotales < structure.price)
         {
-            ShowMessage("No tienes suficiente dinero para construir este edificio.");
+            ShowMessage("Faltan pasos ---->");
+
+            selectedStructure = null;
+
+            DeselectAllButtonsUI();
+
             return;
         }
 
@@ -215,18 +218,26 @@ public class GridManager : MonoBehaviour
             cell.placedStructure = structure;
             placedStructures[cellObject] = structure;
 
-            // Descontar pasos en Supabase y actualizar localmente
             await PasosDeOroUI.Instance.DescontarPasos(structure.price);
             pasosTotales -= structure.price;
 
             UpdatePasosUI(pasosTotales);
-
             SaveBuildingToSupabase(cell, structure);
 
-            // selectedStructure = null;
+            selectedStructure = null;
+            DeselectAllButtonsUI();
         }
     }
 
+    void DeselectAllButtonsUI()
+    {
+        foreach (var button in structureButtons)
+        {
+            ColorBlock colors = button.colors;
+            colors.normalColor = Color.white;
+            button.colors = colors;
+        }
+    }
 
     void SelectStructure(int index)
     {
@@ -247,7 +258,9 @@ public class GridManager : MonoBehaviour
         if (messageText != null)
         {
             messageText.text = message;
-            Invoke(nameof(ClearMessage), 3f); // Limpiar mensaje después de 3 segundos
+            messageText.gameObject.SetActive(true);
+            CancelInvoke(nameof(ClearMessage));
+            Invoke(nameof(ClearMessage), 3f);
         }
     }
 
@@ -256,6 +269,7 @@ public class GridManager : MonoBehaviour
         if (messageText != null)
         {
             messageText.text = "";
+            messageText.gameObject.SetActive(false);
         }
     }
 
