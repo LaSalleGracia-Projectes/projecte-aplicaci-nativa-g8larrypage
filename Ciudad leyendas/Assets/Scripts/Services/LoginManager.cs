@@ -144,12 +144,12 @@ namespace Services
             }
         }
 
-        private async Task CheckPlayerExists(string userId)
+        public async Task CheckPlayerExists(string userId)
         {
             try
             {
                 var supabase = await _supabaseManager.GetClient();
-                var response = await supabase.From<Jugador>().Select("nombre, pasos_totales, id_jugador")
+                var response = await supabase.From<Jugador>().Select("nombre, pasos_totales, id_jugador, id_clan")
                     .Filter("id_usuario", Constants.Operator.Equals, userId).Get();
 
                 if (response.Models.Count == 0)
@@ -179,6 +179,8 @@ namespace Services
 
                     Debug.Log($"Jugador creado: {response2.Models[0].Nombre} con {pasosTotales} pasos");
                     PlayerPrefs.SetInt(JugadorIdKey, response2.Models[0].IdJugador);
+                    PlayerPrefs.SetString("NombreJugador", response.Models[0].Nombre);
+                    PlayerPrefs.SetInt("IdClan", response.Models[0].IdClan ?? 0);
                     PlayerPrefs.Save();
                     Debug.Log("Jugador ID guardado: " + PlayerPrefs.GetInt(JugadorIdKey));
                     Debug.Log("Ciudad creada: " + response3.Models[0].IdCiudad);
@@ -188,6 +190,8 @@ namespace Services
                     Debug.Log("El jugador existe: " + response.Models[0].Nombre);
                     Debug.Log("ID Jugador: " + response.Models[0].IdJugador);
                     PlayerPrefs.SetInt(JugadorIdKey, response.Models[0].IdJugador);
+                    PlayerPrefs.SetString("NombreJugador", response.Models[0].Nombre);
+                    PlayerPrefs.SetInt("IdClan", response.Models[0].IdClan ?? 0);
                     PlayerPrefs.Save();
                     Debug.Log("Jugador ID guardado: " + PlayerPrefs.GetInt(JugadorIdKey));
                 }
@@ -228,7 +232,7 @@ namespace Services
             }
         }
 
-        private async Task SyncTemporalStepsWithPlayer(string userId)
+        public async Task SyncTemporalStepsWithPlayer(string userId)
         {
             try
             {
@@ -276,6 +280,7 @@ namespace Services
         public void GoToGame()
         {
             SceneManager.LoadScene("Grid20-03-2025");
+
         }
     }
 }
