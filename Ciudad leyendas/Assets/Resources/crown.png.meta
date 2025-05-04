@@ -1,10 +1,13 @@
 fileFormatVersion: 2
-guid: aecac8c654e0fbb4b839b659fd0e3862
+guid: 3c945c01baa179840bca51eca1fb6e44
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -1410105078872471023
-    second: ayuntamientoNew_0
+      213: -8222406987496834216
+    second: crown_0
+  - first:
+      213: -6156647272689741206
+    second: crown_1
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -51,7 +54,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 240
+  spritePixelsToUnits: 100
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -126,23 +129,45 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: ayuntamientoNew_0
+      name: crown_0
       rect:
         serializedVersion: 2
-        x: 59
-        y: 23
-        width: 404
-        height: 453
+        x: 15
+        y: 68
+        width: 482
+        height: 374
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 11a05ddd6ec4e6ce0800000000000000
-      internalID: -1410105078872471023
+      spriteID: 85bbf87b86424ed80800000000000000
+      internalID: -8222406987496834216
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crown_1
+      rect:
+        serializedVersion: 2
+        x: 44
+        y: 70
+        width: 424
+        height: 73
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a6253ffbce13f8aa0800000000000000
+      internalID: -6156647272689741206
       vertices: []
       indices: 
       edges: []
@@ -151,7 +176,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 504a8261507a4604aa2440f76d4ec2ac
     internalID: 0
     vertices: []
     indices: 
@@ -161,7 +186,8 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      ayuntamientoNew_0: -1410105078872471023
+      crown_0: -8222406987496834216
+      crown_1: -6156647272689741206
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -14,6 +14,7 @@ public class ProfileUIManager : MonoBehaviour
 
     private readonly SupabaseManager _supabaseManager = SupabaseManager.Instance;
     private Jugador _jugador;
+    public GameObject profileUI;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -273,5 +274,23 @@ public class ProfileUIManager : MonoBehaviour
         {
             Debug.LogError($"Error al cambiar el nombre del jugador: {ex.Message}");
         }
+    }
+
+    /// <summary>
+    /// Desactiva completamente la interfaz del perfil de usuario
+    /// </summary>
+    public void DisableProfileUI()
+    {
+        // Desactivar todo el contenedor principal de la UI del perfil
+        if (profileUI != null)
+            profileUI.SetActive(false);
+
+        // Opcional: Limpiar o restaurar campos de entrada
+        if (playerName != null)
+            playerName.text = _jugador?.Nombre ?? "";
+
+        // Opcional: Detener cualquier operación en curso
+        // Si tuvieras alguna corrutina o tarea asíncrona específica del perfil
+        // aquí podrías detenerla
     }
 }

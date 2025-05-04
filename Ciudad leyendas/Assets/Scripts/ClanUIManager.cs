@@ -4,7 +4,6 @@ using System.Linq;
 using Models;
 using Services;
 using TMPro;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
@@ -16,6 +15,8 @@ public class ClanUIManager : MonoBehaviour
 
     [FormerlySerializedAs("ClanCodeInputField")] [Header("Search Clan Menu Stuff")]
     public TMP_InputField clanCodeInputField;
+
+    public GameObject clanUI;
 
     public TMP_Text searchResultText;
 
@@ -683,5 +684,33 @@ public class ClanUIManager : MonoBehaviour
                 searchResultText.color = Color.black;
             }
         }
+    }
+    
+    /// <summary>
+    /// Desactiva completamente la interfaz del clan
+    /// </summary>
+    public void DisableClanUI()
+    {
+        // Ocultar todos los menús y elementos de la interfaz
+        if (noClanMenu != null)
+            noClanMenu.SetActive(false);
+    
+        if (createClanMenu != null)
+            createClanMenu.SetActive(false);
+    
+        if (clanDetailsMenu != null) 
+            clanDetailsMenu.SetActive(false);
+        
+        // Desactivar todo el contenedor principal de la UI del clan
+        if (clanUI != null)
+            clanUI.SetActive(false);
+    
+        // Opcional: Limpiar cualquier dato temporal o estado actual
+        if (clanCodeInputField != null)
+            clanCodeInputField.text = "";
+        
+        // Detener cualquier búsqueda en curso
+        if (searchCoroutine != null)
+            StopCoroutine(searchCoroutine);
     }
 }
