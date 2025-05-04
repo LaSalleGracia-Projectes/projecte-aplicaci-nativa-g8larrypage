@@ -65,7 +65,7 @@ public class FormManager : MonoBehaviour
     private IEnumerator CheckGameVersionAndContinue()
     {
         yield return StartCoroutine(CheckGameVersion());
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSeconds(1f);
         ShowUIElementsAfterDelay();
         CheckForSession();
     }
