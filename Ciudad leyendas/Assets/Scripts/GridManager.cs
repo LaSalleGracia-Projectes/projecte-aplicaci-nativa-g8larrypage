@@ -201,14 +201,13 @@ public class GridManager : MonoBehaviour
 
     async void PlaceStructureInCell(GameObject cellObject, Structure structure)
     {
-        if (pasosTotales < structure.price)
+        int skinPrecio = SkinManager.Instance.GetPrecioForSkin(structure.skinId);
+
+        if (pasosTotales < skinPrecio)
         {
             ShowMessage("Faltan pasos ---->");
-
             selectedStructure = null;
-
             DeselectAllButtonsUI();
-
             return;
         }
 
@@ -230,8 +229,8 @@ public class GridManager : MonoBehaviour
             cell.placedStructure = structure;
             placedStructures[cellObject] = structure;
 
-            await PasosDeOroUI.Instance.DescontarPasos(structure.price);
-            pasosTotales -= structure.price;
+            await PasosDeOroUI.Instance.DescontarPasos(skinPrecio);
+            pasosTotales -= skinPrecio;
 
             UpdatePasosUI(pasosTotales);
             SaveBuildingToSupabase(cell, structure);
@@ -240,6 +239,7 @@ public class GridManager : MonoBehaviour
             DeselectAllButtonsUI();
         }
     }
+
 
     void DeselectAllButtonsUI()
     {

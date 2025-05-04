@@ -10,11 +10,12 @@ public class SkinManager : MonoBehaviour
     {
         public long id;
         public Sprite sprite;
+        public int precio; // Nuevo atributo de precio
     }
 
     public List<SkinEntry> skins;
 
-    private Dictionary<long, Sprite> skinDict;
+    private Dictionary<long, SkinEntry> skinDict;
 
     void Awake()
     {
@@ -22,12 +23,12 @@ public class SkinManager : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
-            skinDict = new Dictionary<long, Sprite>();
+            skinDict = new Dictionary<long, SkinEntry>();
 
             foreach (var skin in skins)
             {
                 if (!skinDict.ContainsKey(skin.id))
-                    skinDict.Add(skin.id, skin.sprite);
+                    skinDict.Add(skin.id, skin);
             }
         }
         else
@@ -40,9 +41,19 @@ public class SkinManager : MonoBehaviour
     {
         if (skinDict.ContainsKey(id))
         {
-            return skinDict[id];
+            return skinDict[id].sprite;
         }
         Debug.LogWarning($"Skin ID {id} no encontrada.");
         return null;
+    }
+
+    public int GetPrecioForSkin(long id)
+    {
+        if (skinDict.ContainsKey(id))
+        {
+            return skinDict[id].precio;
+        }
+        Debug.LogWarning($"Precio para Skin ID {id} no encontrado.");
+        return -1;
     }
 }
