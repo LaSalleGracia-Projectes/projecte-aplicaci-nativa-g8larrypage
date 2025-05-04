@@ -10,47 +10,130 @@ namespace Services
     public class SignUpManager
     {
         private readonly SupabaseManager _supabaseManager = SupabaseManager.Instance;
-    
-        public async Task SignUp(string email, string emailConfirm,
-            string password, string passwordConfirm, TMP_Text infoText)
-        {
-            bool isValid = await VerifyInputFields(email, emailConfirm, password, passwordConfirm, infoText);
-            if (!isValid) return;
 
-            // If all checks pass, sign up
-            Debug.Log("All checks passed!");
+        public async Task<bool> SignUp(string signUpEmail, string signUpEmailConfirm, string signUpPassword,
+            string signUpPasswordConfirm, TMP_Text infoText)
+        {
+            // Ocultar el texto de información inicialmente
+            if (infoText != null)
+            {
+                infoText.gameObject.SetActive(false);
+            }
+
             try
             {
-                var supabase = await _supabaseManager.GetClient();
-                var session = await supabase.Auth.SignUp(email, password);
-                if (session is { User: not null })
+                // Validar los datos de entrada
+                if (!ValidateSignUpData(signUpEmail, signUpEmailConfirm, signUpPassword, signUpPasswordConfirm,
+                        infoText))
                 {
-                    Debug.Log("SignUp successful!");
+                    // Mostrar el texto de información solo si hay un error de validación
                     if (infoText != null)
                     {
-                        infoText.text = "SignUp successful!";
+                        infoText.gameObject.SetActive(true);
+                    }
+
+                    return false;
+                }
+
+                var supabase = await SupabaseManager.Instance.GetClient();
+                var response = await supabase.Auth.SignUp(signUpEmail, signUpPassword);
+
+                if (response != null && response.User != null)
+                {
+                    Debug.Log("Registro exitoso!");
+                    if (infoText != null)
+                    {
+                        infoText.gameObject.SetActive(true);
+                        infoText.text = "¡Registro exitoso! Revisa tu correo electrónico para confirmar tu cuenta.";
                         infoText.color = Color.green;
                     }
-                    
-                    Debug.Log("user " + session.User.Id);
+
+                    return true;
                 }
-                
-                
+                else
+                {
+                    if (infoText != null)
+                    {
+                        infoText.gameObject.SetActive(true);
+                        infoText.text = "Error en el registro.";
+                        infoText.color = Color.red;
+                    }
+
+                    return false;
+                }
             }
             catch (Exception e)
             {
-                Debug.LogError("SignUp failed: " + e.Message);
+                Debug.LogError("Error en el registro: " + e.Message);
                 if (infoText != null)
                 {
-                    infoText.text = "SignUp failed!";
+                    infoText.gameObject.SetActive(true);
+                    infoText.text = "Error en el registro: " + e.Message;
                     infoText.color = Color.red;
                 }
 
-                return;
+                return false;
             }
         }
-    
-        private async Task<bool> VerifyInputFields(string signUpEmail, string signUpEmailConfirm, 
+
+        private bool ValidateSignUpData(string signUpEmail, string signUpEmailConfirm, string signUpPassword,
+            string signUpPasswordConfirm, TMP_Text infoText)
+        {
+            // Comprobar si las contraseñas coinciden
+            if (signUpPassword != signUpPasswordConfirm)
+            {
+                if (infoText != null)
+                {
+                    infoText.text = "Las contraseñas no coinciden!";
+                    infoText.color = Color.red;
+                }
+
+                return false;
+            }
+
+            // Comprobar si los correos electrónicos coinciden
+            if (signUpEmail != signUpEmailConfirm)
+            {
+                if (infoText != null)
+                {
+                    infoText.text = "Los correos electrónicos no coinciden!";
+                    infoText.color = Color.red;
+                }
+
+                return false;
+            }
+
+            // Validar el formato del correo electrónico
+            if (string.IsNullOrEmpty(signUpEmail) || !signUpEmail.Contains("@") || !signUpEmail.Contains("."))
+            {
+                if (infoText != null)
+                {
+                    infoText.text = "¡Correo electrónico inválido!";
+                    infoText.color = Color.red;
+                }
+
+                return false;
+            }
+
+            // Verificar que la contraseña sea lo suficientemente segura
+            Debug.Log("SignUp Password: " + signUpPassword);
+            if (signUpPassword.Length < 10 || !HasUpperCase(signUpPassword) || !HasLowerCase(signUpPassword) ||
+                !HasSymbol(signUpPassword))
+            {
+                if (infoText != null)
+                {
+                    infoText.text =
+                        "¡La contraseña debe tener al menos 10 caracteres, una letra mayúscula, una letra minúscula y un símbolo!";
+                    infoText.color = Color.red;
+                }
+
+                return false;
+            }
+
+            return true;
+        }
+
+        private async Task<bool> VerifyInputFields(string signUpEmail, string signUpEmailConfirm,
             string signUpPassword, string signUpPasswordConfirm, TMP_Text infoText)
         {
             Debug.Log("SignUp Email: " + signUpEmail);
@@ -62,6 +145,7 @@ namespace Services
                     infoText.text = "Emails do not match!";
                     infoText.color = Color.red;
                 }
+
                 return false;
             }
 
@@ -74,6 +158,7 @@ namespace Services
                     infoText.text = "Passwords do not match!";
                     infoText.color = Color.red;
                 }
+
                 return false;
             }
 
@@ -86,6 +171,7 @@ namespace Services
                     infoText.text = "Invalid email!";
                     infoText.color = Color.red;
                 }
+
                 return false;
             }
 
@@ -100,12 +186,13 @@ namespace Services
                         "Password must be at least 10 characters long, contain an uppercase letter, a lowercase letter, and a symbol!";
                     infoText.color = Color.red;
                 }
+
                 return false;
             }
-        
+
             return true;
         }
-    
+
         private bool HasUpperCase(string input)
         {
             foreach (char c in input)

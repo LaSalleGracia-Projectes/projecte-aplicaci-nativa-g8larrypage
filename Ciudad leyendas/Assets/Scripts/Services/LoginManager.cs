@@ -144,7 +144,7 @@ namespace Services
             }
         }
 
-        private async Task CheckPlayerExists(string userId)
+        public async Task CheckPlayerExists(string userId)
         {
             try
             {
@@ -232,7 +232,7 @@ namespace Services
             }
         }
 
-        private async Task SyncTemporalStepsWithPlayer(string userId)
+        public async Task SyncTemporalStepsWithPlayer(string userId)
         {
             try
             {

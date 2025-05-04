@@ -7,7 +7,6 @@ using Supabase.Gotrue;
 using Supabase.Gotrue.Exceptions;
 using TMPro;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using Client = Supabase.Client;
 
 public class GoogleSignInManager : MonoBehaviour
@@ -17,8 +16,26 @@ public class GoogleSignInManager : MonoBehaviour
     private bool _doExchangeCode;
     private HttpListener httpListener;
     private string _pkce;
+
     private string _token;
+
+    // Cambia de público a privado para seguir buenas prácticas
     private LoginManager _loginManager;
+
+// Agrega un método para recibir la referencia
+    public void SetLoginManager(LoginManager loginManager)
+    {
+        _loginManager = loginManager;
+    }
+
+// O alternativamente, inicialízalo en Awake
+    private void Awake()
+    {
+        if (_loginManager == null)
+        {
+            _loginManager = new LoginManager();
+        }
+    }
 
     public void SignInWithGoogle()
     {
@@ -105,10 +122,22 @@ public class GoogleSignInManager : MonoBehaviour
         {
             var supabase = await ConnectSupabase();
             Session session = (await supabase.Auth.ExchangeCodeForSession(_pkce, _token)!);
-            infoText.text = $"Success! Signed Up as {session.User?.Email}";
+            infoText.text = $"Success! Signed Up as {session!.User?.Email}";
             infoText.color = Color.green;
-            _loginManager.GoToGame();
+
+            // Guarda la sesión
             _loginManager.SaveSession(session);
+
+            // Realiza las mismas comprobaciones que en LogIn
+            if (session.User != null)
+            {
+                // Comprueba si el jugador existe y sincroniza los pasos temporales
+                await _loginManager.CheckPlayerExists(session.User.Id);
+                await _loginManager.SyncTemporalStepsWithPlayer(session.User.Id);
+            }
+
+            // Navega al juego después de completar todo
+            _loginManager.GoToGame();
         }
         catch (GotrueException goTrueException)
         {
