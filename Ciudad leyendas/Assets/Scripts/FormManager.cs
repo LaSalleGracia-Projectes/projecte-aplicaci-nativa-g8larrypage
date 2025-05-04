@@ -4,7 +4,6 @@ using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using Models;
 using Version = Models.Version;
 
 public class FormManager : MonoBehaviour
@@ -34,7 +33,7 @@ public class FormManager : MonoBehaviour
     public Button goToLogInForm;
 
     [Header("Version")] public string currentGameVersion = "1.0.0";
-    private bool _versionChecked = false;
+    private bool _sameVersion = false;
 
     void Awake()
     {
@@ -65,9 +64,21 @@ public class FormManager : MonoBehaviour
     private IEnumerator CheckGameVersionAndContinue()
     {
         yield return StartCoroutine(CheckGameVersion());
-        yield return new WaitForSeconds(1f);
-        ShowUIElementsAfterDelay();
-        CheckForSession();
+
+        if (_sameVersion)
+        {
+            yield return new WaitForSeconds(1f);
+            ShowUIElementsAfterDelay();
+            CheckForSession();
+        }
+        else
+        {
+            if (splashText != null)
+            {
+                splashText.text = "Por favor, actualiza la aplicación para continuar.";
+                splashText.color = Color.yellow;
+            }
+        }
     }
 
     private IEnumerator CheckGameVersion()
@@ -80,12 +91,11 @@ public class FormManager : MonoBehaviour
             {
                 if (splashText != null)
                 {
-                    splashText.text =
-                        "Error al verificar la versión. El juego continuará pero podría haber actualizaciones disponibles.";
+                    splashText.text = "Error al verificar la versión. Por favor, comprueba tu conexión a internet.";
                     splashText.color = Color.red;
                 }
 
-                _versionChecked = false;
+                _sameVersion = false;
             }
             else if (version != currentGameVersion)
             {
@@ -95,7 +105,7 @@ public class FormManager : MonoBehaviour
                     splashText.color = Color.yellow;
                 }
 
-                _versionChecked = false;
+                _sameVersion = false;
             }
             else
             {
@@ -105,7 +115,7 @@ public class FormManager : MonoBehaviour
                     splashText.color = Color.green;
                 }
 
-                _versionChecked = true;
+                _sameVersion = true;
             }
 
             checking = false;
@@ -145,7 +155,7 @@ public class FormManager : MonoBehaviour
             Debug.LogError($"Error al verificar la versión: {e.Message}");
             if (splashText != null)
             {
-                splashText.text = $"Error al verificar la versión: {e.Message}";
+                splashText.text = $"Error al verificar la versión. Por favor, comprueba tu conexión a internet.";
                 splashText.color = Color.red;
             }
 
