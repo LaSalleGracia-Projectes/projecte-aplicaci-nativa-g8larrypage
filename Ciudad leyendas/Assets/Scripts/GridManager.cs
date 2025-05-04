@@ -121,12 +121,24 @@ public class GridManager : MonoBehaviour
         Camera cam = Camera.main;
         float screenHeight = cam.orthographicSize * 2;
         float screenWidth = screenHeight * cam.aspect;
+
+        // Ajustar la ortografía de la cámara según la resolución de la pantalla
         float gridWidth = cols * cellSize;
         float gridHeight = rows * cellSize;
+
         float startX = -gridWidth / 2;
         float startY = -gridHeight / 2;
+
+        // Asegúrate de que la cámara cubra toda la cuadrícula
+        if (gridWidth > screenWidth || gridHeight > screenHeight)
+        {
+            float scaleFactor = Mathf.Max(gridWidth / screenWidth, gridHeight / screenHeight);
+            cam.orthographicSize *= scaleFactor;
+        }
+
         gridOrigin = new Vector2(startX, startY);
     }
+
 
     void GenerateGrid()
     {
