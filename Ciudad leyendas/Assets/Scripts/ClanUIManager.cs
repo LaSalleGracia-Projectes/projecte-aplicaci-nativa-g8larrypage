@@ -177,18 +177,21 @@ public class ClanUIManager : MonoBehaviour
         }
 
         // Configurar el botón según si es el líder o no y cambiar su color
+        // Modificación para el caso de líder del clan (botón borrar)
         if (isOwnClan && jugadorId == clan.IdLeader)
         {
             // Es el líder del clan, puede borrarlo
             joinLeaveClanButton.GetComponentInChildren<TMP_Text>().text = "Borrar Clan";
             joinLeaveClanButton.interactable = true;
 
-            // Cambiar a color rojo para indicar acción de borrar
+            // Cambiar a color rojo brillante para indicar acción de borrar
             ColorBlock colors = joinLeaveClanButton.colors;
-            colors.normalColor = new Color(0.9f, 0.3f, 0.3f, 1f); // Rojo
-            colors.highlightedColor = new Color(1f, 0.4f, 0.4f, 1f);
-            colors.pressedColor = new Color(0.8f, 0.2f, 0.2f, 1f);
+            colors.normalColor = new Color(1f, 0.2f, 0.2f, 1f); // Rojo más brillante
+            colors.highlightedColor = new Color(1f, 0.3f, 0.3f, 1f);
+            colors.pressedColor = new Color(0.9f, 0.1f, 0.1f, 1f);
             joinLeaveClanButton.colors = colors;
+            // Opcional: Asegurar que el texto sea visible sobre el fondo rojo
+            joinLeaveClanButton.GetComponentInChildren<TMP_Text>().color = Color.white;
         }
         else if (isOwnClan)
         {
@@ -196,11 +199,11 @@ public class ClanUIManager : MonoBehaviour
             joinLeaveClanButton.GetComponentInChildren<TMP_Text>().text = "Abandonar Clan";
             joinLeaveClanButton.interactable = true;
 
-            // Cambiar a color rojo para indicar acción de abandonar
+            // Cambiar a color rojo brillante para indicar acción de abandonar
             ColorBlock colors = joinLeaveClanButton.colors;
-            colors.normalColor = new Color(0.9f, 0.3f, 0.3f, 1f); // Rojo
-            colors.highlightedColor = new Color(1f, 0.4f, 0.4f, 1f);
-            colors.pressedColor = new Color(0.8f, 0.2f, 0.2f, 1f);
+            colors.normalColor = new Color(1f, 0.2f, 0.2f, 1f); // Rojo más brillante
+            colors.highlightedColor = new Color(1f, 0.3f, 0.3f, 1f);
+            colors.pressedColor = new Color(0.9f, 0.1f, 0.1f, 1f);
             joinLeaveClanButton.colors = colors;
         }
         else
