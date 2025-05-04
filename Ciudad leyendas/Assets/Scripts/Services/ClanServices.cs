@@ -92,7 +92,7 @@ namespace Services
                     .Filter("id_usuario", Constants.Operator.Equals, PlayerPrefs.GetString("user_id"))
                     .Get();
 
-                if (jugador.Models[0].IdClan == null)
+                if (jugador.Models[0].IdClan != null)
                 {
                     Debug.Log("Ya estas en un clan");
                     return 0;
@@ -123,33 +123,88 @@ namespace Services
             try
             {
                 var supabase = await _supabaseManager.GetClient();
+                int jugadorId = PlayerPrefs.GetInt("jugador_id", 0);
+        
+                if (jugadorId == 0)
+                {
+                    Debug.Log("ID de jugador no encontrado");
+                    return 0;
+                }
+        
                 var jugador = await supabase.From<Jugador>()
-                    .Filter("id_usuario", Constants.Operator.Equals, PlayerPrefs.GetString("user_id"))
+                    .Filter("id_jugador", Constants.Operator.Equals, jugadorId)
                     .Get();
 
-                if (jugador.Models[0].IdClan == null)
+                if (jugador.Models.Count == 0 || jugador.Models[0].IdClan == null)
                 {
-                    Debug.Log("No estas en un clan");
+                    Debug.Log("No estás en un clan");
                     return 0;
                 }
 
                 jugador.Models[0].IdClan = null;
-
                 var response = await supabase.From<Jugador>().Update(jugador.Models[0]);
 
                 if (response.Models.Count > 0)
                 {
-                    Debug.Log("Left clan successfully!");
+                    Debug.Log("Saliste del clan correctamente");
+                    PlayerPrefs.SetInt("IdClan", 0);
+                    PlayerPrefs.Save();
                     return 1;
                 }
 
-                Debug.LogError("Failed to leave clan: " + response);
+                Debug.LogError("Error al abandonar el clan: " + response);
                 return 2;
             }
             catch (Exception e)
             {
-                Debug.LogError("Error leaving clan: " + e.Message);
+                Debug.LogError("Error al abandonar el clan: " + e.Message);
                 return 3;
+            }
+        }
+
+        public async Task<bool> DeleteClan(int clanId)
+        {
+            try
+            {
+                var supabase = await _supabaseManager.GetClient();
+
+                // Primero, obtener todos los jugadores del clan
+                var jugadores = await GetClanPlayers(clanId);
+                if (jugadores != null && jugadores.Count > 0)
+                {
+                    Debug.Log($"Actualizando {jugadores.Count} miembros del clan {clanId}");
+            
+                    // Actualizar cada jugador individualmente para quitar su pertenencia al clan
+                    foreach (var jugador in jugadores)
+                    {
+                        // Establecer IdClan como null para cada jugador
+                        jugador.IdClan = null;
+                        await supabase.From<Jugador>().Update(jugador);
+                
+                        // Si es el jugador actual, actualizar también los PlayerPrefs
+                        int currentPlayerId = PlayerPrefs.GetInt("jugador_id", 0);
+                        if (jugador.IdJugador == currentPlayerId)
+                        {
+                            PlayerPrefs.SetInt("IdClan", 0);
+                            PlayerPrefs.Save();
+                        }
+                    }
+
+                    Debug.Log($"Se han actualizado {jugadores.Count} miembros del clan {clanId}");
+                }
+
+                // Luego eliminar el clan usando el método Delete con filtro
+                await supabase.From<Clan>()
+                    .Filter("id_clan", Constants.Operator.Equals, clanId)
+                    .Delete();
+
+                Debug.Log($"Clan {clanId} eliminado con éxito");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Error al eliminar el clan: {ex.Message}");
+                return false;
             }
         }
 
@@ -183,34 +238,64 @@ namespace Services
             try
             {
                 var supabase = await _supabaseManager.GetClient();
+
+                // Intentar primero buscar por ID (si es un número)
+                if (int.TryParse(clanInfo, out int clanId))
+                {
+                    var responsePorId = await supabase.From<Clan>()
+                        .Where(c => c.IdClan == clanId)
+                        .Get();
+
+                    if (responsePorId.Models.Count > 0)
+                        return responsePorId.Models[0];
+                }
+
+                // Si no encuentra por ID o no es un número, intentar por código o nombre
                 var response = await supabase.From<Clan>()
-                    .Filter("clan_code", Constants.Operator.Equals, clanInfo)
+                    .Where(c => c.ClanCode == clanInfo || c.Nombre.Contains(clanInfo))
+                    .Get();
+
+                Debug.Log($"Respuesta de búsqueda de clan: {response.Models.Count} resultados encontrados");
+
+                if (response.Models.Count > 0)
+                    return response.Models[0];
+
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Error al buscar clan '{clanInfo}': {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Debug.LogError($"Error interno: {ex.InnerException.Message}");
+                }
+
+                return null;
+            }
+        }
+
+        public async Task<List<Jugador>> GetClanPlayers(int clanIdClan)
+        {
+            try
+            {
+                var supabase = await _supabaseManager.GetClient();
+                var response = await supabase.From<Jugador>()
+                    .Filter("id_clan", Constants.Operator.Equals, clanIdClan)
                     .Get();
 
                 if (response.Models.Count > 0)
                 {
-                    Debug.Log("Clan retrieved successfully!");
-                    return response.Models[0];
-                }
-                
-                // If not found by clan code, try by clan name
-                response = await supabase.From<Clan>()
-                    .Filter("nombre", Constants.Operator.Equals, clanInfo)
-                    .Get();
-
-                if (response.Models.Count > 0)
-                {
-                    Debug.Log("Clan retrieved successfully!");
-                    return response.Models[0];
+                    Debug.Log("Clan players retrieved successfully!");
+                    return response.Models;
                 }
 
-                Debug.LogError("Failed to retrieve clan: " + response);
+                Debug.LogError("Failed to retrieve clan players: " + response);
                 return null;
             }
             catch (Exception e)
             {
-                Debug.LogError("Error con supabase: " + e);
-                throw;
+                Debug.LogError("Error retrieving clan players: " + e.Message);
+                return null;
             }
         }
     }
