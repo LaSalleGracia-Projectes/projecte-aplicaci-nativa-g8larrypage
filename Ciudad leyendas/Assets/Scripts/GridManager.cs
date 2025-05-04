@@ -6,6 +6,7 @@ using Models;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using TMPro;
 
 public class GridManager : MonoBehaviour
 {
@@ -16,6 +17,7 @@ public class GridManager : MonoBehaviour
     public Structure[] availableStructures;
     public Button[] structureButtons;
     public Transform placedStructuresParent;
+    public TextMeshProUGUI messageText;  // Mensaje de advertencia
 
     private Vector2 gridOrigin;
     private Cell[,] gridArray;
@@ -25,6 +27,8 @@ public class GridManager : MonoBehaviour
     private long ciudadId = -1;
     private const string JugadorIdKey = "jugador_id";
     private bool ciudadCargada = false;
+
+    private int pasosTotales = 0;
 
     async void Start()
     {
@@ -45,6 +49,7 @@ public class GridManager : MonoBehaviour
         }
 
         InvokeRepeating(nameof(IntentarObtenerCiudad), 0f, 5f);
+        await ActualizarPasos();
     }
 
     async void IntentarObtenerCiudad()
@@ -61,6 +66,12 @@ public class GridManager : MonoBehaviour
                 InvokeRepeating(nameof(LogCiudadIdPeriodicamente), 0f, 5f);
             }
         }
+    }
+
+    async Task ActualizarPasos()
+    {
+        // Actualiza los pasos del jugador para tener el valor actualizado
+        pasosTotales = await PasosDeOroUI.Instance.ObtenerPasosTotales();
     }
 
     void Update()
@@ -177,8 +188,15 @@ public class GridManager : MonoBehaviour
         }
     }
 
-    void PlaceStructureInCell(GameObject cellObject, Structure structure)
+    async void PlaceStructureInCell(GameObject cellObject, Structure structure)
     {
+        // Verificar si el jugador tiene suficiente dinero
+        if (pasosTotales < structure.price)
+        {
+            ShowMessage("No tienes suficiente dinero para construir este edificio.");
+            return;
+        }
+
         Cell cell = cellObject.GetComponent<Cell>();
         if (cell != null && cell.placedStructure == null)
         {
@@ -191,16 +209,24 @@ public class GridManager : MonoBehaviour
             {
                 SpriteRenderer sr = newStructureObj.AddComponent<SpriteRenderer>();
                 sr.sprite = structureSprite;
-                sr.sortingOrder = 10; // Asegura que esté por delante del grid
+                sr.sortingOrder = 10;
             }
 
             cell.placedStructure = structure;
             placedStructures[cellObject] = structure;
 
+            // Descontar pasos en Supabase y actualizar localmente
+            await PasosDeOroUI.Instance.DescontarPasos(structure.price);
+            pasosTotales -= structure.price;
+
+            UpdatePasosUI(pasosTotales);
+
             SaveBuildingToSupabase(cell, structure);
-            selectedStructure = null;
+
+            // selectedStructure = null;
         }
     }
+
 
     void SelectStructure(int index)
     {
@@ -213,6 +239,23 @@ public class GridManager : MonoBehaviour
             {
                 popupManager.ClosePopup();
             }
+        }
+    }
+
+    private void ShowMessage(string message)
+    {
+        if (messageText != null)
+        {
+            messageText.text = message;
+            Invoke(nameof(ClearMessage), 3f); // Limpiar mensaje después de 3 segundos
+        }
+    }
+
+    private void ClearMessage()
+    {
+        if (messageText != null)
+        {
+            messageText.text = "";
         }
     }
 
@@ -295,7 +338,7 @@ public class GridManager : MonoBehaviour
                     if (structure != null)
                     {
                         structure = structure.CloneWithSkin(edificio.IdSkin);
-                        PlaceStructureInCell(cell.gameObject, structure);
+                        VisualizeStructureInCell(cell.gameObject, structure);
                     }
                 }
             }
@@ -306,6 +349,29 @@ public class GridManager : MonoBehaviour
         }
     }
 
+    private void VisualizeStructureInCell(GameObject cellObject, Structure structure)
+    {
+        Cell cell = cellObject.GetComponent<Cell>();
+        if (cell != null && cell.placedStructure == null)
+        {
+            GameObject newStructureObj = new GameObject(structure.structureName);
+            newStructureObj.transform.position = cell.transform.position + new Vector3(0, 0, -1);
+            newStructureObj.transform.parent = placedStructuresParent;
+
+            Sprite structureSprite = SkinManager.Instance.GetSpriteForSkin(structure.skinId);
+            if (structureSprite != null)
+            {
+                SpriteRenderer sr = newStructureObj.AddComponent<SpriteRenderer>();
+                sr.sprite = structureSprite;
+                sr.sortingOrder = 10;
+            }
+
+            cell.placedStructure = structure;
+            placedStructures[cellObject] = structure;
+        }
+    }
+
+
     private Structure FindStructureByName(string name)
     {
         foreach (var s in availableStructures)
@@ -315,8 +381,6 @@ public class GridManager : MonoBehaviour
         }
         return null;
     }
-
-    // ==== NUEVAS FUNCIONES PARA MOSTRAR/OCULTAR ====
 
     public void OcultarEstructuras()
     {
@@ -337,5 +401,12 @@ public class GridManager : MonoBehaviour
                 child.gameObject.SetActive(visible);
             }
         }
+    }
+
+    private void UpdatePasosUI(int newPasos)
+    {
+        PasosDeOroUI.Instance.SafeUpdatePasos();
+
+
     }
 }

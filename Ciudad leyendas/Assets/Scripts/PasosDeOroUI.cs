@@ -1,17 +1,31 @@
 using System;
-using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
-using Models;
 using Services;
 using static Supabase.Postgrest.Constants;
+using Models;
+using System.Threading.Tasks;
 
 public class PasosDeOroUI : MonoBehaviour
 {
+    public static PasosDeOroUI Instance { get; private set; }
+
     public TextMeshProUGUI pasosText;
     public float updateInterval = 5f;
 
     private const string JugadorIdKey = "jugador_id";
+
+    private async void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject); // Mantener entre escenas
+    }
 
     private async void Start()
     {
@@ -25,7 +39,7 @@ public class PasosDeOroUI : MonoBehaviour
         InvokeRepeating(nameof(SafeUpdatePasos), updateInterval, updateInterval);
     }
 
-    private async void SafeUpdatePasos()
+    public async void SafeUpdatePasos()
     {
         await UpdatePasosUI();
     }
@@ -34,9 +48,7 @@ public class PasosDeOroUI : MonoBehaviour
     {
         try
         {
-            // Obtener el id_jugador como int desde PlayerPrefs
-            int storedJugadorId = PlayerPrefs.GetInt(JugadorIdKey, -1);  // -1 es el valor por defecto si no se encuentra
-
+            int storedJugadorId = PlayerPrefs.GetInt(JugadorIdKey, -1);
             if (storedJugadorId == -1)
             {
                 Debug.LogWarning("No se encontró el jugador_id en PlayerPrefs.");
@@ -46,7 +58,6 @@ public class PasosDeOroUI : MonoBehaviour
 
             var client = await SupabaseManager.Instance.GetClient();
 
-            // Obtener el jugador con ese id_jugador
             var jugadorResponse = await client
                 .From<Jugador>()
                 .Select("pasos_totales")
@@ -69,6 +80,49 @@ public class PasosDeOroUI : MonoBehaviour
         {
             pasosText.text = "0";
             Debug.LogError($"Error actualizando los pasos de oro: {ex.Message}");
+        }
+    }
+
+    public async Task<int> ObtenerPasosTotales()
+    {
+        int storedJugadorId = PlayerPrefs.GetInt(JugadorIdKey, -1);
+        if (storedJugadorId == -1)
+            return 0;
+
+        var client = await SupabaseManager.Instance.GetClient();
+        var jugadorResponse = await client
+            .From<Jugador>()
+            .Select("pasos_totales")
+            .Filter("id_jugador", Operator.Equals, storedJugadorId)
+            .Get();
+
+        if (jugadorResponse.Models.Count > 0)
+        {
+            var jugador = jugadorResponse.Models[0];
+            return jugador.PasosTotales;
+        }
+
+        return 0;
+    }
+
+    public async Task DescontarPasos(int cantidad)
+    {
+        int storedJugadorId = PlayerPrefs.GetInt(JugadorIdKey, -1);
+        if (storedJugadorId == -1) return;
+
+        var client = await SupabaseManager.Instance.GetClient();
+        var jugadorResponse = await client
+            .From<Jugador>()
+            .Select("*")
+            .Filter("id_jugador", Operator.Equals, storedJugadorId)
+            .Get();
+
+        if (jugadorResponse.Models.Count > 0)
+        {
+            var jugador = jugadorResponse.Models[0];
+            jugador.PasosTotales -= cantidad;
+            await client.From<Jugador>().Update(jugador);
+            await UpdatePasosUI(); // Refresca visualmente el texto
         }
     }
 }
