@@ -34,6 +34,9 @@ public class ClanUIManager : MonoBehaviour
     public TMP_Text clanDetailsText;
     public GameObject clanPlayers;
 
+    public GameObject gridManager;
+    public GameObject settingsBtn;
+
 
     private ClanServices clanServices;
     private Coroutine searchCoroutine;
@@ -48,6 +51,10 @@ public class ClanUIManager : MonoBehaviour
         noClanMenu.SetActive(false);
         createClanMenu.SetActive(false);
         clanDetailsMenu.SetActive(false);
+
+        // Ocultamos el botón de ajustes cuando el menú de clan está abierto
+        if (settingsBtn != null)
+            settingsBtn.SetActive(false);
 
         // Configurar el listener para el input field
         clanCodeInputField.onValueChanged.AddListener(OnClanCodeInputChanged);
@@ -685,32 +692,43 @@ public class ClanUIManager : MonoBehaviour
             }
         }
     }
-    
+
     /// <summary>
     /// Desactiva completamente la interfaz del clan
+    /// </summary>
+    /// <summary>
+    /// Desactiva completamente la interfaz del clan y activa el gridManager
     /// </summary>
     public void DisableClanUI()
     {
         // Ocultar todos los menús y elementos de la interfaz
         if (noClanMenu != null)
             noClanMenu.SetActive(false);
-    
+
         if (createClanMenu != null)
             createClanMenu.SetActive(false);
-    
-        if (clanDetailsMenu != null) 
+
+        if (clanDetailsMenu != null)
             clanDetailsMenu.SetActive(false);
-        
+
         // Desactivar todo el contenedor principal de la UI del clan
         if (clanUI != null)
             clanUI.SetActive(false);
-    
+
         // Opcional: Limpiar cualquier dato temporal o estado actual
         if (clanCodeInputField != null)
             clanCodeInputField.text = "";
-        
+
         // Detener cualquier búsqueda en curso
         if (searchCoroutine != null)
             StopCoroutine(searchCoroutine);
+
+        // Activar el gridManager al cerrar la interfaz
+        if (gridManager != null)
+            gridManager.SetActive(true);
+
+        // Activar el botón de ajustes cuando se cierra la interfaz
+        if (settingsBtn != null)
+            settingsBtn.SetActive(true);
     }
 }

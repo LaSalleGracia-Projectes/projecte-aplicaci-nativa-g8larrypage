@@ -5230,6 +5230,14 @@ PrefabInstance:
       propertyPath: clanUI
       value: 
       objectReference: {fileID: 321857769}
+    - target: {fileID: 3153316830990116059, guid: e22bbab8c5770e34c8fdf6a9ad8d03c4, type: 3}
+      propertyPath: gridManager
+      value: 
+      objectReference: {fileID: 259286623}
+    - target: {fileID: 3153316830990116059, guid: e22bbab8c5770e34c8fdf6a9ad8d03c4, type: 3}
+      propertyPath: settingsBtn
+      value: 
+      objectReference: {fileID: 531526629}
     - target: {fileID: 5227890280483494763, guid: e22bbab8c5770e34c8fdf6a9ad8d03c4, type: 3}
       propertyPath: m_Name
       value: ClanUI
