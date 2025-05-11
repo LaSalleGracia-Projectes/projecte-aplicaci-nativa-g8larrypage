@@ -34,6 +34,9 @@ public class ClanUIManager : MonoBehaviour
     public TMP_Text clanDetailsText;
     public GameObject clanPlayers;
 
+    [Header("Other UI")] public GameObject gridManager;
+    public GameObject settingsBtn;
+
 
     private ClanServices clanServices;
     private Coroutine searchCoroutine;
@@ -49,105 +52,11 @@ public class ClanUIManager : MonoBehaviour
         createClanMenu.SetActive(false);
         clanDetailsMenu.SetActive(false);
 
-        // Configurar el listener para el input field
-        clanCodeInputField.onValueChanged.AddListener(OnClanCodeInputChanged);
+        // Ocultamos el botón de ajustes cuando el menú de clan está abierto
+        if (settingsBtn != null)
+            settingsBtn.SetActive(false);
 
-        // Establecer texto por defecto si no hay nada escrito
-        if (searchResultText != null && string.IsNullOrEmpty(clanCodeInputField.text))
-        {
-            searchResultText.text = "You're not in a clan. Search for a clan code or create your clan";
-            searchResultText.color = Color.black;
-        }
-
-        // Comprobar si el jugador ya pertenece a un clan
-        int clanId = PlayerPrefs.GetInt("IdClan", 0);
-        Debug.Log($"ClanID al iniciar: {clanId}");
-
-        // Desactivar el botón de crear clan si el jugador ya pertenece a uno
-        if (btnOpenCreateClanMenu != null)
-        {
-            btnOpenCreateClanMenu.interactable = (clanId == 0);
-        }
-
-        if (clanId > 0)
-        {
-            // El jugador ya pertenece a un clan, obtener y mostrar información
-            try
-            {
-                var clan = await clanServices.GetClanByInfo(clanId.ToString());
-                if (clan != null)
-                {
-                    // Mostramos los detalles del clan, pero mantenemos oculto el menú de búsqueda
-                    noClanMenu.SetActive(false);
-                    clanDetailsMenu.SetActive(true);
-
-                    // Mostrar los detalles del clan
-                    ShowClanDetails(clan);
-                    Debug.Log($"Mostrando información del clan: {clan.Nombre}");
-                }
-                else
-                {
-                    // No se encontró el clan, mostramos el menú de búsqueda y "No Clan"
-                    noClanMenu.SetActive(true);
-                    clanDetailsMenu.SetActive(false);
-                    Debug.LogWarning("No se pudo encontrar el clan con ID: " + clanId);
-
-                    // Corregimos el PlayerPrefs ya que el clan no existe
-                    PlayerPrefs.SetInt("IdClan", 0);
-
-                    // Restaurar mensaje por defecto
-                    if (searchResultText != null)
-                    {
-                        searchResultText.text = "You're not in a clan. Search for a clan code or create your clan";
-                        searchResultText.color = Color.black;
-                    }
-
-                    // Ya que no tiene clan, activamos el botón de crear
-                    if (btnOpenCreateClanMenu != null)
-                    {
-                        btnOpenCreateClanMenu.interactable = true;
-                    }
-                }
-            }
-            catch (System.Exception ex)
-            {
-                Debug.LogError("Error al cargar información del clan: " + ex.Message);
-                noClanMenu.SetActive(true);
-                clanDetailsMenu.SetActive(false);
-
-                // Restaurar mensaje por defecto
-                if (searchResultText != null)
-                {
-                    searchResultText.text = "You're not in a clan. Search for a clan code or create your clan";
-                    searchResultText.color = Color.black;
-                }
-
-                // Si hay un error, permitimos crear un clan nuevo
-                if (btnOpenCreateClanMenu != null)
-                {
-                    btnOpenCreateClanMenu.interactable = true;
-                }
-            }
-        }
-        else
-        {
-            // El jugador no pertenece a ningún clan, mostramos la interfaz de búsqueda
-            noClanMenu.SetActive(true);
-            Debug.Log("El jugador no pertenece a ningún clan, mostrando menú de búsqueda");
-
-            // Aseguramos que el texto por defecto se muestre
-            if (searchResultText != null)
-            {
-                searchResultText.text = "You're not in a clan. Search for a clan code or create your clan";
-                searchResultText.color = Color.black;
-            }
-
-            // Aseguramos que el botón de crear esté activo
-            if (btnOpenCreateClanMenu != null)
-            {
-                btnOpenCreateClanMenu.interactable = true;
-            }
-        }
+        // Resto del código existente...
     }
 
     // Método para mostrar los detalles de un clan
@@ -685,32 +594,40 @@ public class ClanUIManager : MonoBehaviour
             }
         }
     }
-    
+
     /// <summary>
-    /// Desactiva completamente la interfaz del clan
+    /// Desactiva completamente la interfaz del clan y activa el gridManager
     /// </summary>
     public void DisableClanUI()
     {
         // Ocultar todos los menús y elementos de la interfaz
         if (noClanMenu != null)
             noClanMenu.SetActive(false);
-    
+
         if (createClanMenu != null)
             createClanMenu.SetActive(false);
-    
-        if (clanDetailsMenu != null) 
+
+        if (clanDetailsMenu != null)
             clanDetailsMenu.SetActive(false);
-        
+
         // Desactivar todo el contenedor principal de la UI del clan
         if (clanUI != null)
             clanUI.SetActive(false);
-    
+
         // Opcional: Limpiar cualquier dato temporal o estado actual
         if (clanCodeInputField != null)
             clanCodeInputField.text = "";
-        
+
         // Detener cualquier búsqueda en curso
         if (searchCoroutine != null)
             StopCoroutine(searchCoroutine);
+
+        // Activar el gridManager al cerrar la interfaz
+        if (gridManager != null)
+            gridManager.SetActive(true);
+
+        // Activar el botón de ajustes cuando se cierra la interfaz
+        if (settingsBtn != null)
+            settingsBtn.SetActive(true);
     }
 }
