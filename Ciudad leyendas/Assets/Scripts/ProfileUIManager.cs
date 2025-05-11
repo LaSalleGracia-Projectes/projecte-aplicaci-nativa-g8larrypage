@@ -16,6 +16,9 @@ public class ProfileUIManager : MonoBehaviour
     private Jugador _jugador;
     public GameObject profileUI;
 
+    public GameObject gridManager;
+    public GameObject ajustes;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -279,18 +282,16 @@ public class ProfileUIManager : MonoBehaviour
     /// <summary>
     /// Desactiva completamente la interfaz del perfil de usuario
     /// </summary>
+    /// <summary>
+    /// Desactiva completamente la interfaz del perfil y reactiva el gridManager y botón de ajustes
+    /// </summary>
     public void DisableProfileUI()
     {
-        // Desactivar todo el contenedor principal de la UI del perfil
-        if (profileUI != null)
-            profileUI.SetActive(false);
+        // Desactivar la UI del perfil
+        profileUI.SetActive(false);
 
-        // Opcional: Limpiar o restaurar campos de entrada
-        if (playerName != null)
-            playerName.text = _jugador?.Nombre ?? "";
-
-        // Opcional: Detener cualquier operación en curso
-        // Si tuvieras alguna corrutina o tarea asíncrona específica del perfil
-        // aquí podrías detenerla
+        // Reactivar elementos de la interfaz principal
+        gridManager.SetActive(true);
+        ajustes.gameObject.SetActive(true);
     }
 }
