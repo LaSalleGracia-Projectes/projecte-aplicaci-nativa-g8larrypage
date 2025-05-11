@@ -2970,9 +2970,17 @@ PrefabInstance:
       value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
     - target: {fileID: 4288288886016768507, guid: 96ffc83b4544f774eb2071e33c88ab16, type: 3}
+      propertyPath: ajustes
+      value: 
+      objectReference: {fileID: 531526629}
+    - target: {fileID: 4288288886016768507, guid: 96ffc83b4544f774eb2071e33c88ab16, type: 3}
       propertyPath: profileUI
       value: 
       objectReference: {fileID: 1338846239}
+    - target: {fileID: 4288288886016768507, guid: 96ffc83b4544f774eb2071e33c88ab16, type: 3}
+      propertyPath: gridManager
+      value: 
+      objectReference: {fileID: 259286623}
     - target: {fileID: 4422634494277261073, guid: 96ffc83b4544f774eb2071e33c88ab16, type: 3}
       propertyPath: m_Name
       value: ProfileUI
@@ -4062,7 +4070,7 @@ MonoBehaviour:
   clanUI: {fileID: 321857769}
   profileUI: {fileID: 1338846239}
   gridManager: {fileID: 259286623}
-  ajustes: {fileID: 0}
+  ajustes: {fileID: 531526631}
 --- !u!4 &1216475939
 Transform:
   m_ObjectHideFlags: 0
@@ -4544,7 +4552,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.18845676, g: 0.5602375, b: 0.7264151, a: 1}
+  m_Color: {r: 0.24313727, g: 0.38431376, b: 0.25882354, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -4626,8 +4634,8 @@ Camera:
   m_GameObject: {fileID: 1382659159}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_ClearFlags: 2
+  m_BackGroundColor: {r: 0.2040608, g: 1, b: 0, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
