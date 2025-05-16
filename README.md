@@ -29,13 +29,13 @@ Juego de la ciudad de las leyendas
 3. Ejectar la aplicación instalada
 
 #### Proyecto
-Clona el repositorio:
+1. Clona el repositorio:
 ```bash
 git clone https://github.com/LaSalleGracia-Projectes/projecte-aplicaci-nativa-g8larrypage.git
 ```
-Abre el proyecto en **Unity 6.0.32f1**
-Restaura los paquetes necesarios (si aplica)
-Ejecuta el proyecto desde el entorno de desarrollo
+2. Abre el proyecto en **Unity 6.0.32f1**
+3. Restaura los paquetes necesarios (si aplica)
+4. Ejecuta el proyecto desde el entorno de desarrollo
 
 
 <!-- USAGE EXAMPLES -->
