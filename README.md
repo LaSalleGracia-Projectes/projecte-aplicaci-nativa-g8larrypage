@@ -23,22 +23,29 @@ Juego de la ciudad de las leyendas
 
 
 ### Installation
-
+#### App movil
 1. Descargar la ultima release
 2. Ejecutar y instalar el apk
 3. Ejectar la aplicación instalada
 
+#### Proyecto
+Clona el repositorio:
+```bash
+git clone https://github.com/LaSalleGracia-Projectes/projecte-aplicaci-nativa-g8larrypage.git
+```
+Abre el proyecto en <!-- Visual Studio, Unity, etc. según corresponda -->
+Restaura los paquetes necesarios (si aplica)
+Ejecuta el proyecto desde el entorno de desarrollo
 
 
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-Puedes construir tu ciudad, unirte a un clan y jugar!
-
-
-## Test
-
-No hay.
+- Construye tu ciudad
+- Unete a clanes
+- Crea un usuario
+- Inicar sesion
+- Sincronización con la otra app
 
 <!-- ROADMAP -->
 ## Roadmap
@@ -46,4 +53,5 @@ No hay.
 - [X] Sincronización de pasos
 - [X] Creación de clanes
 - [X] Cambiar nombre
-- [X] Construir edificios 
+- [X] Construir edificios
+- [X] Inicio de sesion y registro
