@@ -33,7 +33,7 @@ Clona el repositorio:
 ```bash
 git clone https://github.com/LaSalleGracia-Projectes/projecte-aplicaci-nativa-g8larrypage.git
 ```
-Abre el proyecto en <!-- Visual Studio, Unity, etc. según corresponda -->
+Abre el proyecto en **Unity 6.0.32f1**
 Restaura los paquetes necesarios (si aplica)
 Ejecuta el proyecto desde el entorno de desarrollo
 
