@@ -27,6 +27,15 @@ public class ProfileUIManager : MonoBehaviour
         
         GetPlayerData();
     }
+    
+    public void EnableProfileUI()
+    {
+        profileUI.SetActive(true);
+        gridManager.SetActive(false);
+        ajustes.gameObject.SetActive(false);
+
+        GetPlayerData();
+    }
 
     private async void GetPlayerData()
     {
@@ -289,6 +298,9 @@ public class ProfileUIManager : MonoBehaviour
     {
         // Desactivar la UI del perfil
         profileUI.SetActive(false);
+        
+        if (playerName != null)
+            playerName.text = "";
 
         // Reactivar elementos de la interfaz principal
         gridManager.SetActive(true);
